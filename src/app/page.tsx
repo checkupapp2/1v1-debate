@@ -5,6 +5,7 @@ import { matchupId, computeStatsEdge } from "@/lib/matchup";
 import { recordLocalVote, getLocalVotes } from "@/lib/local";
 import { ATTRS } from "@/lib/types";
 import Confetti from "@/components/Confetti";
+import { SEED_PLAYERS } from "@/data/players";
 
 interface MatchupData {
   matchup_id: string;
@@ -47,7 +48,13 @@ export default function Home() {
   const revealRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch("/api/players").then(r => r.json()).then(d => { setPlayers(d.players || []); setLoading(false); });
+    fetch("/api/players")
+      .then(r => r.json())
+      .then(d => { setPlayers(d.players && d.players.length > 0 ? d.players : SEED_PLAYERS); setLoading(false); })
+      .catch(() => { setPlayers(SEED_PLAYERS); setLoading(false); });
+    // Fallback: if API doesn't respond in 6s, use seed data directly
+    const timer = setTimeout(() => { setPlayers(prev => prev.length === 0 ? SEED_PLAYERS : prev); setLoading(false); }, 6000);
+    return () => clearTimeout(timer);
     fetch("/api/weekly-king").then(r => r.json()).then(d => setKing(d?.king ?? null)).catch(() => {});
     setVoteCount(getLocalVotes().length);
   }, []);
