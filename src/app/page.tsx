@@ -165,7 +165,7 @@ export default function Home() {
           <>
             <div className="shrink-0 px-4 pt-2 pb-1 text-center">
               <h1 className="font-display text-2xl tracking-wider sm:text-3xl">
-                WHO&apos;S BETTER <span className="text-checkup-orange">1V1?</span>
+WHO WINS? <span className="text-checkup-orange">1V1?</span>
               </h1>
               <p className="text-[10px] uppercase tracking-widest text-white/30">
                 {catTab !== "ALL" ? catTab : "All players"} · tap to vote
