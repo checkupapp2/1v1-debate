@@ -198,14 +198,14 @@ WHO WINS? <span className="text-checkup-orange">1V1?</span>
           </>
         )}
 
-        {/* ── VOTED STATE ── */}
-        {picked && data && a && b && pickedPlayer && (
+        {/* ── VOTED STATE ── show immediately on pick; data fills in async */}
+        {picked && a && b && pickedPlayer && (
           <div className="flex flex-1 min-h-0 flex-col">
-            {/* Mini player strip */}
+            {/* Mini player strip — shows instantly */}
             <div ref={revealRef} className="flex shrink-0 items-center gap-2 border-b border-white/10 px-3 py-2">
-              <MiniCard player={a} won={picked === a.id} pct={aPct} />
+              <MiniCard player={a} won={picked === a.id} pct={data ? aPct : (picked === a.id ? 100 : 0)} loading={!data} />
               <div className="font-display text-sm text-checkup-orange">VS</div>
-              <MiniCard player={b} won={picked === b.id} pct={bPct} />
+              <MiniCard player={b} won={picked === b.id} pct={data ? bPct : (picked === b.id ? 100 : 0)} loading={!data} />
               {isUnderdog && (
                 <span className="ml-auto shrink-0 rounded-full border border-checkup-orange/60 bg-checkup-orange/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-checkup-orange">🔥 Underdog</span>
               )}
@@ -213,21 +213,34 @@ WHO WINS? <span className="text-checkup-orange">1V1?</span>
 
             {/* Scrollable reveal */}
             <div className="flex-1 min-h-0 overflow-y-auto space-y-2.5 px-3 py-3">
-              {/* Community % */}
+
+              {/* Community % — skeleton while loading */}
               <div className="rounded-xl bg-white/5 p-3">
                 <p className="mb-1 text-[10px] uppercase tracking-widest text-white/40">Community vote</p>
-                <div className="flex justify-between font-display text-base sm:text-xl mb-1">
-                  <span className={picked === a.id ? "text-checkup-orange" : "text-white/50"}>{a.name.split(" ")[0]} {aPct}%</span>
-                  <span className={picked === b.id ? "text-checkup-orange" : "text-white/50"}>{bPct}% {b.name.split(" ")[0]}</span>
-                </div>
-                <div className="flex h-2 overflow-hidden rounded-full bg-white/10">
-                  <div className="animate-grow bg-checkup-orange" style={{ width: `${aPct}%` }} />
-                  <div className="animate-grow bg-white/25" style={{ width: `${bPct}%` }} />
-                </div>
-                <p className="mt-1 text-center text-[10px] text-white/30">{data.aVotes + data.bVotes} total votes</p>
+                {!data ? (
+                  <div className="space-y-2">
+                    <div className="h-5 animate-pulse rounded bg-white/10" />
+                    <div className="flex h-2 overflow-hidden rounded-full bg-white/10">
+                      <div className="animate-pulse bg-checkup-orange/40" style={{ width: "50%" }} />
+                    </div>
+                    <p className="text-center text-[10px] text-white/20">tallying votes…</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex justify-between font-display text-base sm:text-xl mb-1">
+                      <span className={picked === a.id ? "text-checkup-orange" : "text-white/50"}>{a.name.split(" ")[0]} {aPct}%</span>
+                      <span className={picked === b.id ? "text-checkup-orange" : "text-white/50"}>{bPct}% {b.name.split(" ")[0]}</span>
+                    </div>
+                    <div className="flex h-2 overflow-hidden rounded-full bg-white/10">
+                      <div className="animate-grow bg-checkup-orange" style={{ width: `${aPct}%` }} />
+                      <div className="animate-grow bg-white/25" style={{ width: `${bPct}%` }} />
+                    </div>
+                    <p className="mt-1 text-center text-[10px] text-white/30">{data.aVotes + data.bVotes} total votes</p>
+                  </>
+                )}
               </div>
 
-              {/* Stat bars */}
+              {/* Stat bars — available immediately from player objects */}
               <div className="rounded-xl bg-white/5 p-3">
                 <p className="mb-2 text-[10px] uppercase tracking-widest text-white/40">Head to head</p>
                 <div className="space-y-1.5">
@@ -251,17 +264,23 @@ WHO WINS? <span className="text-checkup-orange">1V1?</span>
                 </div>
               </div>
 
-              {/* Analysis */}
-              {data.analysis && (
-                <div className="rounded-xl bg-white/5 p-3">
-                  <p className="mb-1 text-[10px] uppercase tracking-widest text-white/40">Check-Up Analysis</p>
+              {/* Analysis — skeleton while loading, real text when ready */}
+              <div className="rounded-xl bg-white/5 p-3">
+                <p className="mb-1 text-[10px] uppercase tracking-widest text-white/40">Check-Up Analysis</p>
+                {!data ? (
+                  <div className="space-y-2">
+                    <div className="h-4 animate-pulse rounded bg-white/10 w-full" />
+                    <div className="h-4 animate-pulse rounded bg-white/10 w-5/6" />
+                    <div className="h-4 animate-pulse rounded bg-white/10 w-4/6" />
+                  </div>
+                ) : (
                   <p className="text-sm leading-relaxed">{data.analysis}</p>
-                </div>
-              )}
+                )}
+              </div>
 
               {/* Action buttons */}
               <div className="flex flex-wrap gap-2">
-                <button onClick={() => share(`I got ${pickedPlayer.name} in this 1v1 (${pickedPct}% agree). Who you taking? Check-Up 1v1`)}
+                <button onClick={() => share(`I got ${pickedPlayer.name} in this 1v1${data ? ` (${pickedPct}% agree)` : ""}. Who you taking? Check-Up 1v1`)}
                   className="flex-1 rounded-xl border border-white/20 py-2 text-[11px] font-bold uppercase tracking-wider text-white/70 hover:bg-white/5 active:scale-95">
                   Share
                 </button>
@@ -271,7 +290,7 @@ WHO WINS? <span className="text-checkup-orange">1V1?</span>
                     Fight me 🔥
                   </button>
                 )}
-                {data.videoId && (
+                {data?.videoId && (
                   <button onClick={() => setShowVideo(v => !v)}
                     className="flex-1 rounded-xl border border-white/20 py-2 text-[11px] font-bold uppercase tracking-wider text-white/70 hover:bg-white/5 active:scale-95">
                     {showVideo ? "Hide" : "▶ Highlights"}
@@ -279,7 +298,7 @@ WHO WINS? <span className="text-checkup-orange">1V1?</span>
                 )}
               </div>
 
-              {showVideo && data.videoId && (
+              {showVideo && data?.videoId && (
                 <div className="aspect-video overflow-hidden rounded-xl bg-black">
                   <iframe className="h-full w-full" src={`https://www.youtube.com/embed/${data.videoId}?autoplay=1`} title="Highlights" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
                 </div>
@@ -360,7 +379,7 @@ function PickCard({ player, onVote, voting }: { player: Player; onVote: () => vo
   );
 }
 
-function MiniCard({ player, won, pct }: { player: Player; won: boolean; pct: number }) {
+function MiniCard({ player, won, pct, loading }: { player: Player; won: boolean; pct: number; loading?: boolean }) {
   return (
     <div className={`flex flex-1 min-w-0 items-center gap-2 overflow-hidden rounded-lg border p-1.5 transition-all ${won ? "border-checkup-orange bg-checkup-orange/10" : "border-white/10 opacity-50"}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -368,7 +387,11 @@ function MiniCard({ player, won, pct }: { player: Player; won: boolean; pct: num
         onError={e => { e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(player.name)}&size=80&background=F9A825&color=1E1E1E&bold=true`; }} />
       <div className="min-w-0">
         <div className={`truncate font-display text-sm leading-tight ${won ? "text-checkup-orange" : "text-white/50"}`}>{player.name}</div>
-        <div className="text-[10px] text-white/40">{pct}%</div>
+        {loading ? (
+          <div className="h-3 w-8 animate-pulse rounded bg-white/10 mt-0.5" />
+        ) : (
+          <div className="text-[10px] text-white/40">{pct}%</div>
+        )}
       </div>
       {won && <span className="ml-auto shrink-0 text-checkup-orange">✓</span>}
     </div>
