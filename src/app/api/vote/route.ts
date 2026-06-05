@@ -76,11 +76,14 @@ export async function POST(req: NextRequest) {
     .get();
   let aVotes = 0,
     bVotes = 0;
+  let voteA = 0, voteB = 0;
   votesSnap.forEach((d) => {
     const v = d.data();
-    if (v.player_voted_id === a.id) aVotes++;
-    else if (v.player_voted_id === b.id) bVotes++;
+    if (v.player_voted_id === a.id) voteA++;
+    else if (v.player_voted_id === b.id) voteB++;
   });
+  aVotes = voteA;
+  bVotes = voteB;
 
   const data = matchupSnap.data()!;
   return NextResponse.json({

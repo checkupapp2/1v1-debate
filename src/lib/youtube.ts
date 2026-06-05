@@ -2,7 +2,7 @@
 // Uses YOUTUBE_API_KEY from the existing Check-Up Google Cloud project.
 export async function fetchYouTubeVideoId(query: string): Promise<string | null> {
   const key = process.env.YOUTUBE_API_KEY;
-  if (!key || key.startsWith("PASTE_")) return null;
+  if (!key || key.toLowerCase().startsWith("paste_")) return null;
   const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=1&q=${encodeURIComponent(query)}&key=${key}`;
   try {
     const res = await fetch(url, { next: { revalidate: 60 * 60 * 24 * 30 } });
