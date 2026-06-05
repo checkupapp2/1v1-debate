@@ -4,6 +4,7 @@ import { Player, Era, Category } from "@/lib/types";
 import { matchupId, computeStatsEdge } from "@/lib/matchup";
 import { recordLocalVote, getLocalVotes } from "@/lib/local";
 import { ATTRS } from "@/lib/types";
+import Confetti from "@/components/Confetti";
 
 interface MatchupData {
   matchup_id: string;
@@ -41,6 +42,7 @@ export default function Home() {
   const [comments, setComments] = useState<{ id: string; text: string; upvotes: number }[]>([]);
   const [commentText, setCommentText] = useState("");
   const [showVideo, setShowVideo] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
   const [loading, setLoading] = useState(true);
   const revealRef = useRef<HTMLDivElement>(null);
 
@@ -67,7 +69,7 @@ export default function Home() {
     while (j === i) j = Math.floor(Math.random() * pool.length);
     setA(pool[i]); setB(pool[j]);
     setPicked(null); setData(null);
-    setShowComments(false); setComments([]); setCommentText(""); setShowVideo(false);
+    setShowComments(false); setComments([]); setCommentText(""); setShowVideo(false); setShowConfetti(false);
   }
 
   useEffect(() => { if (filtered.length >= 2 && !a) pickRandom(); }, [filtered]);
@@ -83,6 +85,7 @@ export default function Home() {
     setData(await res.json());
     recordLocalVote(playerId);
     setVoteCount(c => c + 1);
+    setShowConfetti(true);
     setVoting(false);
     setTimeout(() => revealRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
   }
@@ -191,7 +194,9 @@ WHO WINS? <span className="text-checkup-orange">1V1?</span>
 
         {/* ── VOTED STATE ── */}
         {picked && data && a && b && pickedPlayer && (
-          <div className="flex flex-1 min-h-0 flex-col">
+          <>
+            <Confetti trigger={showConfetti} />
+            <div className="flex flex-1 min-h-0 flex-col">
             {/* Mini player strip */}
             <div ref={revealRef} className="flex shrink-0 items-center gap-2 border-b border-white/10 px-3 py-2">
               <MiniCard player={a} won={picked === a.id} pct={aPct} />
@@ -205,21 +210,21 @@ WHO WINS? <span className="text-checkup-orange">1V1?</span>
             {/* Scrollable reveal */}
             <div className="flex-1 min-h-0 overflow-y-auto space-y-2.5 px-3 py-3">
               {/* Community % */}
-              <div className="rounded-xl bg-white/5 p-3">
+              <div className="rounded-xl bg-white/5 p-3 animate-slideUp">
                 <p className="mb-1 text-[10px] uppercase tracking-widest text-white/40">Community vote</p>
                 <div className="flex justify-between font-display text-base sm:text-xl mb-1">
                   <span className={picked === a.id ? "text-checkup-orange" : "text-white/50"}>{a.name.split(" ")[0]} {aPct}%</span>
                   <span className={picked === b.id ? "text-checkup-orange" : "text-white/50"}>{bPct}% {b.name.split(" ")[0]}</span>
                 </div>
                 <div className="flex h-2 overflow-hidden rounded-full bg-white/10">
-                  <div className="animate-grow bg-checkup-orange" style={{ width: `${aPct}%` }} />
-                  <div className="animate-grow bg-white/25" style={{ width: `${bPct}%` }} />
+                  <div className="bg-checkup-orange" style={{ width: `${aPct}%`, animation: `bar-grow 1.1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards` }} />
+                  <div className="bg-white/25" style={{ width: `${bPct}%`, animation: `bar-grow 1.1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards` }} />
                 </div>
                 <p className="mt-1 text-center text-[10px] text-white/30">{data.aVotes + data.bVotes} total votes</p>
               </div>
 
               {/* Stat bars */}
-              <div className="rounded-xl bg-white/5 p-3">
+              <div className="rounded-xl bg-white/5 p-3 animate-slideUp" style={{ animationDelay: "0.1s" }}>
                 <p className="mb-2 text-[10px] uppercase tracking-widest text-white/40">Head to head</p>
                 <div className="space-y-1.5">
                   {ATTRS.map(k => {
@@ -232,8 +237,8 @@ WHO WINS? <span className="text-checkup-orange">1V1?</span>
                           <span className={!aWins ? "text-checkup-orange font-bold" : "text-white/35"}>{bv}</span>
                         </div>
                         <div className="flex h-1 overflow-hidden rounded-full bg-white/10">
-                          <div className={`animate-grow ${aWins ? "bg-checkup-orange" : "bg-white/20"}`} style={{ width: `${(av/(av+bv))*100}%` }} />
-                          <div className={`animate-grow ${!aWins ? "bg-checkup-orange" : "bg-white/20"}`} style={{ width: `${(bv/(av+bv))*100}%` }} />
+                          <div className={`${aWins ? "bg-checkup-orange" : "bg-white/20"}`} style={{ width: `${(av/(av+bv))*100}%`, animation: `bar-grow 1.1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards` }} />
+                          <div className={`${!aWins ? "bg-checkup-orange" : "bg-white/20"}`} style={{ width: `${(bv/(av+bv))*100}%`, animation: `bar-grow 1.1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards` }} />
                         </div>
                       </div>
                     );
@@ -244,7 +249,7 @@ WHO WINS? <span className="text-checkup-orange">1V1?</span>
 
               {/* Analysis */}
               {data.analysis && (
-                <div className="rounded-xl bg-white/5 p-3">
+                <div className="rounded-xl bg-white/5 p-3 animate-slideUp" style={{ animationDelay: "0.15s" }}>
                   <p className="mb-1 text-[10px] uppercase tracking-widest text-white/40">Check-Up Analysis</p>
                   <p className="text-sm leading-relaxed">{data.analysis}</p>
                 </div>
@@ -321,6 +326,7 @@ WHO WINS? <span className="text-checkup-orange">1V1?</span>
               </button>
             </div>
           </div>
+          </>
         )}
       </div>
     </div>
