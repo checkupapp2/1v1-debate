@@ -123,7 +123,7 @@ export default function Home() {
           <span className="text-checkup-orange">CHECK-UP</span> <span>1V1</span>
         </a>
         <div className="flex items-center gap-2">
-          {king && <span className="hidden text-[10px] tracking-wider text-white/40 sm:block">👑 {king.name}</span>}
+          {king && <span className="hidden text-[10px] tracking-wider text-checkup-orange sm:block">👑 {king.name}</span>}
           <a href="/submit" className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] tracking-wider text-white/40 hover:text-checkup-orange">+ Add Players</a>
           <span className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] tracking-wider text-white/40">{voteCount} votes</span>
         </div>
