@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { adminDb } from "@/lib/firebaseAdmin";
+import { getAdminDb } from "@/lib/firebaseAdmin";
 
 export async function POST(req: Request) {
   try {
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const submissionRef = adminDb.collection("submissions").doc();
+    const submissionRef = getAdminDb().collection("submissions").doc();
     await submissionRef.set({
       name,
       category,

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminDb } from "@/lib/firebaseAdmin";
+import { getAdminDb } from "@/lib/firebaseAdmin";
 import { SEED_PLAYERS } from "@/data/players";
 import { computeStatsEdge } from "@/lib/matchup";
 import { fetchYouTubeVideoId } from "@/lib/youtube";
@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
   // Look up players (firestore first, fall back to seed)
   async function findPlayer(id: string) {
     try {
-      const doc = await adminDb.collection("players").doc(id).get();
+      const doc = await getAdminDb().collection("players").doc(id).get();
       if (doc.exists) return doc.data() as any;
     } catch {}
     return SEED_PLAYERS.find((p) => p.id === id);
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
   if (!a || !b) return NextResponse.json({ error: "no players" }, { status: 404 });
 
   // Ensure matchup doc exists
-  const matchupRef = adminDb.collection("matchups").doc(matchupId);
+  const matchupRef = getAdminDb().collection("matchups").doc(matchupId);
   let matchupSnap = await matchupRef.get();
   if (!matchupSnap.exists) {
     const edge = computeStatsEdge(a, b);
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
   // Cache YouTube video for the voted player
   let videoId: string | null = null;
   try {
-    const playerRef = adminDb.collection("players").doc(playerVotedId);
+    const playerRef = getAdminDb().collection("players").doc(playerVotedId);
     const pSnap = await playerRef.get();
     if (pSnap.exists && pSnap.data()?.youtube_video_id) {
       videoId = pSnap.data()!.youtube_video_id;
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
 
   // Record vote
   try {
-    await adminDb.collection("votes").add({
+    await getAdminDb().collection("votes").add({
       matchup_id: matchupId,
       player_voted_id: playerVotedId,
       created_at: Date.now(),
@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
   } catch {}
 
   // Tally
-  const votesSnap = await adminDb
+  const votesSnap = await getAdminDb()
     .collection("votes")
     .where("matchup_id", "==", matchupId)
     .get();

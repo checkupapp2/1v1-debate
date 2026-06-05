@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { adminDb } from "@/lib/firebaseAdmin";
+import { getAdminDb } from "@/lib/firebaseAdmin";
 
 export async function GET() {
   try {
-    const submissionsRef = adminDb.collection("submissions");
+    const submissionsRef = getAdminDb().collection("submissions");
     const snapshot = await submissionsRef
       .where("status", "==", "pending")
       .orderBy("created_at", "desc")

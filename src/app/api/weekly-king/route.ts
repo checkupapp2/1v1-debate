@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { adminDb } from "@/lib/firebaseAdmin";
+import { getAdminDb } from "@/lib/firebaseAdmin";
 import { SEED_PLAYERS } from "@/data/players";
 
 export const dynamic = "force-dynamic";
@@ -8,7 +8,7 @@ export const revalidate = 0;
 export async function GET() {
   try {
     const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    const snap = await adminDb
+    const snap = await getAdminDb()
       .collection("votes")
       .where("created_at", ">=", weekAgo)
       .get();
@@ -22,7 +22,7 @@ export async function GET() {
     const [topId, votes] = entries[0];
     let name = topId;
     try {
-      const doc = await adminDb.collection("players").doc(topId).get();
+      const doc = await getAdminDb().collection("players").doc(topId).get();
       if (doc.exists) name = doc.data()?.name ?? topId;
       else name = SEED_PLAYERS.find((p) => p.id === topId)?.name ?? topId;
     } catch {

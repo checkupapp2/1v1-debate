@@ -1,4 +1,4 @@
-import { adminDb } from "@/lib/firebaseAdmin";
+import { getAdminDb } from "@/lib/firebaseAdmin";
 import { SEED_PLAYERS } from "@/data/players";
 import { Metadata } from "next";
 
@@ -6,7 +6,7 @@ interface Props { params: { id: string } }
 
 async function getMatchup(id: string) {
   try {
-    const doc = await adminDb.collection("matchups").doc(id).get();
+    const doc = await getAdminDb().collection("matchups").doc(id).get();
     if (doc.exists) return doc.data() as any;
   } catch {}
   return null;
