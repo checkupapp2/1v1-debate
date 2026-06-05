@@ -54,6 +54,10 @@ html, body {
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+/* Stat bar grow animation */
+@keyframes growBar { from { width: 0%; } }
+.animate-grow { animation: growBar 1.1s ease-out forwards; }
+
 /* Card hover glow */
 .card-glow:hover {
   box-shadow: 0 0 20px rgba(249, 168, 37, 0.3);

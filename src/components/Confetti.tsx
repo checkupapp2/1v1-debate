@@ -1,51 +1,52 @@
 "use client";
+// CSS-only vote feedback — no canvas, no heavy animations, instant on mobile Safari
 import { useEffect, useState } from "react";
 
-const COLORS = ["#F9A825", "#FFFFFF", "#FF6B35", "#00BCD4", "#FF4081", "#76FF03"];
-const SHAPES = ["square", "circle"];
-
-interface ConfettiProps {
-  trigger: boolean;
+interface Props {
+  votedId: string | null;
 }
 
-export default function Confetti({ trigger }: ConfettiProps) {
-  type Piece = { id: number; x: number; color: string; shape: string; delay: number; size: number };
-  const [pieces, setPieces] = useState<Piece[]>([]);
+export default function Confetti({ votedId }: Props) {
+  const [rings, setRings] = useState<{ id: number; x: number; y: number }[]>([]);
 
   useEffect(() => {
-    if (!trigger) return;
-    const newPieces = Array.from({ length: 40 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      color: COLORS[Math.floor(Math.random() * COLORS.length)],
-      shape: SHAPES[Math.floor(Math.random() * SHAPES.length)],
-      delay: Math.random() * 0.6,
-      size: 6 + Math.random() * 8,
+    if (!votedId) return;
+    // Spawn 3 expanding rings from center of voted card
+    const rings = Array.from({ length: 3 }, (_, i) => ({
+      id: Date.now() + i,
+      x: 50 + (Math.random() - 0.5) * 20,
+      y: 40 + (Math.random() - 0.5) * 20,
     }));
-    setPieces(newPieces);
-    const timer = setTimeout(() => setPieces([]), 2200);
-    return () => clearTimeout(timer);
-  }, [trigger]);
+    setRings(rings);
+    const t = setTimeout(() => setRings([]), 1000);
+    return () => clearTimeout(t);
+  }, [votedId]);
 
-  if (pieces.length === 0) return null;
+  if (rings.length === 0) return null;
 
   return (
-    <div className="confetti-container" aria-hidden="true">
-      {pieces.map((p) => (
+    <div aria-hidden="true" style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 9999 }}>
+      {rings.map((r) => (
         <div
-          key={p.id}
+          key={r.id}
           style={{
-            left: `${p.x}%`,
-            backgroundColor: p.color,
-            width: p.size,
-            height: p.size,
-            borderRadius: p.shape === "circle" ? "50%" : "2px",
-            animationDelay: `${p.delay}s`,
-            animationDuration: "1.8s",
+            position: "absolute",
+            left: `${r.x}%`,
+            top: `${r.y}%`,
+            width: 8,
+            height: 8,
+            borderRadius: "50%",
+            background: "rgba(249,168,37,0.6)",
+            animation: "ring-burst 0.8s ease-out forwards",
           }}
-          className="confetti-piece"
         />
       ))}
+      <style>{`
+        @keyframes ring-burst {
+          0%   { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+          100% { transform: translate(-50%,-50%) scale(40); opacity: 0; border: 2px solid #F9A825; background: transparent; }
+        }
+      `}</style>
     </div>
   );
 }
