@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getTopVoted } from "@/lib/local";
 import { Player } from "@/lib/types";
 
@@ -7,6 +7,8 @@ export default function RushmorePage() {
   const [top, setTop] = useState<Player[]>([]);
   const [sharing, setSharing] = useState(false);
   const [shareMsg, setShareMsg] = useState("");
+  // Ref-based lock prevents double-tap before React re-render fires
+  const shareLock = useRef(false);
 
   useEffect(() => {
     fetch("/api/players")
@@ -24,12 +26,14 @@ export default function RushmorePage() {
   }, []);
 
   async function shareRushmore() {
-    if (sharing) return;
+    // Ref lock fires synchronously — blocks double-tap even before React re-renders
+    if (shareLock.current) return;
+    shareLock.current = true;
     setSharing(true);
     setShareMsg("Creating image…");
 
     try {
-      // Build query params — server generates the PNG, no CORS issues
+      // Server renders the PNG (no CORS restrictions server-side)
       const params = new URLSearchParams();
       top.forEach((p, i) => {
         params.set(`n${i + 1}`, p.name);
@@ -38,40 +42,51 @@ export default function RushmorePage() {
       });
 
       const res = await fetch(`/api/rushmore-image?${params.toString()}`);
-      if (!res.ok) throw new Error("Image route returned " + res.status);
+      if (!res.ok) throw new Error(`Image generation failed (${res.status})`);
 
       const blob = await res.blob();
       const file = new File([blob], "my-rushmore.png", { type: "image/png" });
 
-      // Native share sheet — iOS / Android
-      if (
-        typeof navigator !== "undefined" &&
-        navigator.canShare &&
-        navigator.canShare({ files: [file] })
-      ) {
-        await navigator.share({
-          files: [file],
-          title: "My 1v1 Mt. Rushmore",
-          text: `My basketball 1v1 Mt. Rushmore: ${top.map((p) => p.name).join(", ")}. Build yours on Check-Up 1v1!`,
-        });
-        setShareMsg("");
+      // Try native image share — works on iOS 14+ and Android Chrome
+      // Don't gate on canShare() — it's unavailable on iOS < 15.4 but share still works
+      if (typeof navigator !== "undefined" && navigator.share) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: "My 1v1 Mt. Rushmore",
+            text: `My basketball 1v1 Mt. Rushmore: ${top.map((p) => p.name).join(", ")}. Build yours on Check-Up 1v1!`,
+          });
+          // Success — user shared or dismissed
+        } catch (shareErr: unknown) {
+          const name = (shareErr as { name?: string })?.name;
+          if (name === "AbortError") {
+            // User cancelled the share sheet — that's fine, no fallback needed
+          } else {
+            // Browser supports share but not files — download instead
+            downloadBlob(blob);
+          }
+        }
       } else {
-        // Desktop fallback — download the PNG
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "my-rushmore.png";
-        a.click();
-        URL.revokeObjectURL(url);
-        setShareMsg("Image saved!");
-        setTimeout(() => setShareMsg(""), 2500);
+        // Desktop: download the PNG
+        downloadBlob(blob);
       }
     } catch {
+      // Server image generation failed — fall back to text share
       fallbackShare();
-      setShareMsg("");
     } finally {
+      shareLock.current = false;
       setSharing(false);
+      setShareMsg("");
     }
+  }
+
+  function downloadBlob(blob: Blob) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "my-rushmore.png";
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   function fallbackShare() {
