@@ -48,7 +48,6 @@ export default function Home() {
   const revealRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Load players — fall back to seed data immediately if API fails or takes too long
     fetch("/api/players")
       .then(r => r.json())
       .then(d => { setPlayers(d.players && d.players.length > 0 ? d.players : SEED_PLAYERS); setLoading(false); })
@@ -57,13 +56,8 @@ export default function Home() {
       setPlayers(prev => prev.length === 0 ? SEED_PLAYERS : prev);
       setLoading(false);
     }, 6000);
-
-    // Load weekly king
     fetch("/api/weekly-king").then(r => r.json()).then(d => setKing(d?.king ?? null)).catch(() => {});
-
-    // Restore local vote count
     setVoteCount(getLocalVotes().length);
-
     return () => clearTimeout(timer);
   }, []);
 
@@ -135,40 +129,71 @@ export default function Home() {
   }
 
   return (
-    <div className="flex h-screen-d flex-col overflow-hidden bg-checkup-black text-white">
-      {/* HEADER */}
-      <header className="flex shrink-0 items-center justify-between border-b border-white/10 px-3 py-2">
-        <a href="/" className="font-display text-xl tracking-wider">
-          <span className="text-checkup-orange">CHECK-UP</span> <span>1V1</span>
+    <div className="flex h-screen-d flex-col overflow-hidden bg-[#0A0A0A] text-white">
+
+      {/* ── HEADER ─────────────────────────────────────────────────────────── */}
+      <header className="flex shrink-0 items-center justify-between px-3 py-2.5"
+        style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", background: "linear-gradient(180deg,#1A1A1A 0%,#0F0F0F 100%)" }}>
+        <a href="/" className="flex items-center gap-2">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/checkup_btn.png" alt="Check-Up" className="h-8 w-8 rounded-full object-cover"
+            style={{ boxShadow: "0 0 8px rgba(255,152,0,0.5)" }}
+            onError={e => { e.currentTarget.style.display = "none"; }} />
+          <span className="font-display text-lg tracking-widest">
+            <span style={{ background: "linear-gradient(135deg,#FF9800,#FF5722)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>CHECK-UP</span>
+            {" "}<span className="text-white">1V1</span>
+          </span>
         </a>
         <div className="flex items-center gap-2">
-          {king && <span className="hidden text-[10px] tracking-wider text-checkup-orange sm:block">👑 {king.name}</span>}
-          <a href="/submit" className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] tracking-wider text-white/40 hover:text-checkup-orange">+ Add Players</a>
-          <span className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] tracking-wider text-white/40">{voteCount} votes</span>
+          {king && (
+            <span className="hidden items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider sm:flex"
+              style={{ background: "rgba(255,152,0,0.12)", border: "1px solid rgba(255,152,0,0.3)", color: "#FF9800" }}>
+              👑 {king.name}
+            </span>
+          )}
+          <a href="/submit"
+            className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider transition-all hover:text-white"
+            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>
+            + Players
+          </a>
+          <span className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
+            style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.4)" }}>
+            {voteCount} votes
+          </span>
         </div>
       </header>
 
-      {/* CATEGORY TABS */}
-      <div className="no-scrollbar flex shrink-0 items-center gap-1 overflow-x-auto border-b border-white/10 px-3 py-2">
+      {/* ── CATEGORY TABS ──────────────────────────────────────────────────── */}
+      <div className="no-scrollbar flex shrink-0 items-center gap-1.5 overflow-x-auto px-3 py-2.5"
+        style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
         {CATEGORY_TABS.map(tab => (
           <button
             key={tab}
             onClick={() => { setCatTab(tab); setA(null); setEra("All-Time"); }}
-            className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-widest transition-all ${catTab === tab ? "bg-checkup-orange text-black" : "bg-white/5 text-white/60 hover:bg-white/10"}`}
+            className="shrink-0 rounded-full px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-widest transition-all active:scale-95"
+            style={catTab === tab
+              ? { background: "linear-gradient(135deg,#FF9800 0%,#FF5722 100%)", boxShadow: "0 2px 10px rgba(255,152,0,0.4)", color: "#000" }
+              : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.55)", border: "1px solid rgba(255,255,255,0.08)" }
+            }
           >
             {tab}
           </button>
         ))}
       </div>
 
-      {/* ERA SUB-FILTER (NBA and ALL only) */}
+      {/* ── ERA SUB-FILTER ─────────────────────────────────────────────────── */}
       {(catTab === "ALL" || catTab === "NBA") && (
-        <div className="no-scrollbar flex shrink-0 items-center gap-1 overflow-x-auto border-b border-white/5 px-3 py-1.5">
+        <div className="no-scrollbar flex shrink-0 items-center gap-1 overflow-x-auto px-3 py-1.5"
+          style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
           {ERAS.map(e => (
             <button
               key={e}
               onClick={() => { setEra(e); setA(null); }}
-              className={`shrink-0 rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest transition-all ${era === e ? "bg-white/20 text-white" : "text-white/40 hover:text-white/70"}`}
+              className="shrink-0 rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-widest transition-all active:scale-95"
+              style={era === e
+                ? { background: "rgba(255,152,0,0.15)", border: "1px solid rgba(255,152,0,0.4)", color: "#FF9800" }
+                : { color: "rgba(255,255,255,0.35)" }
+              }
             >
               {e}
             </button>
@@ -176,31 +201,47 @@ export default function Home() {
         </div>
       )}
 
-      {/* MAIN */}
+      {/* ── MAIN ───────────────────────────────────────────────────────────── */}
       <div className="relative flex flex-1 min-h-0 flex-col">
 
-        {/* ── PICKING STATE ── */}
+        {/* ── PICKING STATE ──────────────────────────────────────────────── */}
         {!picked && (
           <>
-            <div className="shrink-0 px-4 pt-2 pb-1 text-center">
+            <div className="shrink-0 px-4 pt-3 pb-1 text-center">
               <h1 className="font-display text-2xl tracking-wider sm:text-3xl">
-WHO WINS? <span className="text-checkup-orange">1V1?</span>
+                WHO WINS?{" "}
+                <span style={{ background: "linear-gradient(135deg,#FF9800,#FF5722)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>1V1?</span>
               </h1>
-              <p className="text-[10px] uppercase tracking-widest text-white/30">
+              <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.3)" }}>
                 {catTab !== "ALL" ? catTab : "All players"} · tap to vote
               </p>
             </div>
-            {loading && <div className="flex flex-1 items-center justify-center text-white/40">Loading…</div>}
+
+            {loading && (
+              <div className="flex flex-1 items-center justify-center text-sm font-semibold" style={{ color: "rgba(255,255,255,0.3)" }}>
+                Loading…
+              </div>
+            )}
             {!loading && filtered.length < 2 && (
-              <div className="flex flex-1 items-center justify-center text-center text-white/40 text-sm px-8">
+              <div className="flex flex-1 items-center justify-center text-center text-sm font-medium px-8" style={{ color: "rgba(255,255,255,0.4)" }}>
                 Not enough players in this filter. Try a different era or category.
               </div>
             )}
+
             {!loading && a && b && (
-              <div className="relative flex flex-1 min-h-0 gap-1.5 px-2 pb-2">
+              <div className="relative flex flex-1 min-h-0 gap-2 px-2 pb-2">
                 <PickCard player={a} onVote={() => vote(a.id)} voting={voting} />
+                {/* VS badge */}
                 <div className="pointer-events-none absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-checkup-orange bg-checkup-black font-display text-sm text-checkup-orange shadow-xl sm:h-14 sm:w-14 sm:text-xl">VS</div>
+                  <div className="vs-badge flex h-11 w-11 items-center justify-center rounded-full font-display text-sm sm:h-14 sm:w-14 sm:text-xl"
+                    style={{
+                      background: "linear-gradient(135deg,#1A1A1A,#0A0A0A)",
+                      border: "2px solid #FF9800",
+                      color: "#FF9800",
+                      boxShadow: "0 0 14px rgba(255,152,0,0.5)",
+                    }}>
+                    VS
+                  </div>
                 </div>
                 <PickCard player={b} onVote={() => vote(b.id)} voting={voting} />
               </div>
@@ -208,202 +249,326 @@ WHO WINS? <span className="text-checkup-orange">1V1?</span>
           </>
         )}
 
-        {/* ── VOTED STATE ── show immediately on pick; data fills in async */}
+        {/* ── VOTED STATE ────────────────────────────────────────────────── */}
         {picked && a && b && pickedPlayer && (
           <div className="flex flex-1 min-h-0 flex-col">
-            {/* Mini player strip — shows instantly */}
-            <div ref={revealRef} className="flex shrink-0 items-center gap-2 border-b border-white/10 px-3 py-2">
+
+            {/* Mini strip — shows instantly */}
+            <div ref={revealRef} className="flex shrink-0 items-center gap-2 px-3 py-2"
+              style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", background: "rgba(26,26,26,0.8)" }}>
               <MiniCard player={a} won={picked === a.id} pct={data ? aPct : (picked === a.id ? 100 : 0)} loading={!data} />
-              <div className="font-display text-sm text-checkup-orange">VS</div>
+              <div className="font-display text-sm" style={{ color: "#FF9800" }}>VS</div>
               <MiniCard player={b} won={picked === b.id} pct={data ? bPct : (picked === b.id ? 100 : 0)} loading={!data} />
               {isUnderdog && (
-                <span className="ml-auto shrink-0 rounded-full border border-checkup-orange/60 bg-checkup-orange/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-checkup-orange">🔥 Underdog</span>
+                <span className="ml-auto shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest"
+                  style={{ border: "1px solid rgba(255,152,0,0.6)", background: "rgba(255,152,0,0.1)", color: "#FF9800" }}>
+                  🔥 Underdog
+                </span>
               )}
             </div>
 
-            {/* Scrollable reveal */}
+            {/* Scrollable results */}
             <div className="flex-1 min-h-0 overflow-y-auto space-y-2.5 px-3 py-3">
 
-              {/* Community % — skeleton while loading */}
-              <div className="rounded-xl bg-white/5 p-3">
-                <p className="mb-1 text-[10px] uppercase tracking-widest text-white/40">Community vote</p>
+              {/* Community vote */}
+              <div className="rounded-2xl p-3" style={{ background: "#1A1A1A", border: "1px solid rgba(255,255,255,0.07)" }}>
+                <p className="mb-1.5 text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>
+                  Community Vote
+                </p>
                 {!data ? (
                   <div className="space-y-2">
-                    <div className="h-5 animate-pulse rounded bg-white/10" />
-                    <div className="flex h-2 overflow-hidden rounded-full bg-white/10">
-                      <div className="animate-pulse bg-checkup-orange/40" style={{ width: "50%" }} />
+                    <div className="h-5 rounded-lg shimmer" />
+                    <div className="flex h-2 overflow-hidden rounded-full" style={{ background: "rgba(255,255,255,0.06)" }}>
+                      <div className="animate-pulse rounded-full" style={{ width: "50%", background: "rgba(255,152,0,0.35)" }} />
                     </div>
-                    <p className="text-center text-[10px] text-white/20">tallying votes…</p>
+                    <p className="text-center text-[10px]" style={{ color: "rgba(255,255,255,0.2)" }}>tallying votes…</p>
                   </div>
                 ) : (
                   <>
-                    <div className="flex justify-between font-display text-base sm:text-xl mb-1">
-                      <span className={picked === a.id ? "text-checkup-orange" : "text-white/50"}>{a.name.split(" ")[0]} {aPct}%</span>
-                      <span className={picked === b.id ? "text-checkup-orange" : "text-white/50"}>{bPct}% {b.name.split(" ")[0]}</span>
+                    <div className="flex justify-between font-display text-base sm:text-xl mb-1.5">
+                      <span style={picked === a.id ? { background: "linear-gradient(135deg,#FF9800,#FF5722)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" } : { color: "rgba(255,255,255,0.4)" }}>
+                        {a.name.split(" ")[0]} {aPct}%
+                      </span>
+                      <span style={picked === b.id ? { background: "linear-gradient(135deg,#FF9800,#FF5722)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" } : { color: "rgba(255,255,255,0.4)" }}>
+                        {bPct}% {b.name.split(" ")[0]}
+                      </span>
                     </div>
-                    <div className="flex h-2 overflow-hidden rounded-full bg-white/10">
-                      <div className="animate-grow bg-checkup-orange" style={{ width: `${aPct}%` }} />
-                      <div className="animate-grow bg-white/25" style={{ width: `${bPct}%` }} />
+                    <div className="flex h-2 overflow-hidden rounded-full" style={{ background: "rgba(255,255,255,0.08)" }}>
+                      <div className="animate-grow" style={{ width: `${aPct}%`, background: "linear-gradient(90deg,#FF9800,#FF5722)" }} />
+                      <div className="animate-grow" style={{ width: `${bPct}%`, background: "rgba(255,255,255,0.2)" }} />
                     </div>
-                    <p className="mt-1 text-center text-[10px] text-white/30">{data.aVotes + data.bVotes} total votes</p>
+                    <p className="mt-1 text-center text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>
+                      {data.aVotes + data.bVotes} total votes
+                    </p>
                   </>
                 )}
               </div>
 
-              {/* Stat bars — available immediately from player objects */}
-              <div className="rounded-xl bg-white/5 p-3">
-                <p className="mb-2 text-[10px] uppercase tracking-widest text-white/40">Head to head</p>
-                <div className="space-y-1.5">
+              {/* Head to head stats */}
+              <div className="rounded-2xl p-3" style={{ background: "#1A1A1A", border: "1px solid rgba(255,255,255,0.07)" }}>
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>
+                  Head to Head
+                </p>
+                <div className="space-y-2">
                   {ATTRS.map(k => {
                     const av = a[k] as number, bv = b[k] as number, aWins = av >= bv;
                     return (
                       <div key={k}>
-                        <div className="flex justify-between text-[9px] uppercase tracking-wider mb-0.5">
-                          <span className={aWins ? "text-checkup-orange font-bold" : "text-white/35"}>{av}</span>
-                          <span className="text-white/35">{k.replace("_", " ")}</span>
-                          <span className={!aWins ? "text-checkup-orange font-bold" : "text-white/35"}>{bv}</span>
+                        <div className="flex justify-between text-[9px] font-bold uppercase tracking-wider mb-0.5">
+                          <span style={aWins ? { color: "#FF9800" } : { color: "rgba(255,255,255,0.3)" }}>{av}</span>
+                          <span style={{ color: "rgba(255,255,255,0.3)" }}>{k.replace("_", " ")}</span>
+                          <span style={!aWins ? { color: "#FF9800" } : { color: "rgba(255,255,255,0.3)" }}>{bv}</span>
                         </div>
-                        <div className="flex h-1 overflow-hidden rounded-full bg-white/10">
-                          <div className={`animate-grow ${aWins ? "bg-checkup-orange" : "bg-white/20"}`} style={{ width: `${(av/(av+bv))*100}%` }} />
-                          <div className={`animate-grow ${!aWins ? "bg-checkup-orange" : "bg-white/20"}`} style={{ width: `${(bv/(av+bv))*100}%` }} />
+                        <div className="flex h-1.5 overflow-hidden rounded-full" style={{ background: "rgba(255,255,255,0.07)" }}>
+                          <div className="animate-grow rounded-full" style={{ width: `${(av/(av+bv))*100}%`, background: aWins ? "linear-gradient(90deg,#FF9800,#FF5722)" : "rgba(255,255,255,0.18)" }} />
+                          <div className="animate-grow rounded-full" style={{ width: `${(bv/(av+bv))*100}%`, background: !aWins ? "linear-gradient(90deg,#FF9800,#FF5722)" : "rgba(255,255,255,0.18)" }} />
                         </div>
                       </div>
                     );
                   })}
-                  {edge && <p className="mt-1.5 text-center text-[10px] text-white/40">Numbers favor <span className="font-bold text-checkup-orange">{edge.winnerId === a.id ? a.name : b.name}</span></p>}
+                  {edge && (
+                    <p className="mt-2 text-center text-[10px] font-semibold" style={{ color: "rgba(255,255,255,0.4)" }}>
+                      Numbers favor{" "}
+                      <span style={{ color: "#FF9800", fontWeight: 700 }}>
+                        {edge.winnerId === a.id ? a.name : b.name}
+                      </span>
+                    </p>
+                  )}
                 </div>
               </div>
 
-              {/* Analysis — skeleton while loading, real text when ready */}
-              <div className="rounded-xl bg-white/5 p-3">
-                <p className="mb-1 text-[10px] uppercase tracking-widest text-white/40">Check-Up Analysis</p>
+              {/* Check-Up Analysis */}
+              <div className="rounded-2xl p-3" style={{ background: "#1A1A1A", border: "1px solid rgba(255,255,255,0.07)" }}>
+                <div className="mb-1.5 flex items-center gap-2">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/checkup_btn.png" alt="" className="h-5 w-5 rounded-full object-cover"
+                    style={{ boxShadow: "0 0 6px rgba(255,152,0,0.4)" }}
+                    onError={e => { e.currentTarget.style.display = "none"; }} />
+                  <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>
+                    Check-Up Analysis
+                  </p>
+                </div>
                 {!data ? (
                   <div className="space-y-2">
-                    <div className="h-4 animate-pulse rounded bg-white/10 w-full" />
-                    <div className="h-4 animate-pulse rounded bg-white/10 w-5/6" />
-                    <div className="h-4 animate-pulse rounded bg-white/10 w-4/6" />
+                    <div className="h-4 rounded-lg shimmer w-full" />
+                    <div className="h-4 rounded-lg shimmer w-5/6" />
+                    <div className="h-4 rounded-lg shimmer w-4/6" />
                   </div>
                 ) : (
-                  <p className="text-sm leading-relaxed">{data.analysis}</p>
+                  <p className="text-sm font-medium leading-relaxed" style={{ color: "rgba(255,255,255,0.85)" }}>
+                    {data.analysis}
+                  </p>
                 )}
               </div>
 
               {/* Action buttons */}
               <div className="flex flex-wrap gap-2">
-                <button onClick={() => share(`I got ${pickedPlayer.name} in this 1v1${data ? ` (${pickedPct}% agree)` : ""}. Who you taking? Check-Up 1v1`)}
-                  className="flex-1 rounded-xl border border-white/20 py-2 text-[11px] font-bold uppercase tracking-wider text-white/70 hover:bg-white/5 active:scale-95">
-                  Share
+                <button
+                  onClick={() => share(`I got ${pickedPlayer.name} in this 1v1${data ? ` (${pickedPct}% agree)` : ""}. Who you taking? Check-Up 1v1`)}
+                  className="btn-cu-outline flex-1 rounded-xl py-2.5 text-[11px] font-bold uppercase tracking-wider"
+                >
+                  🔗 Share
                 </button>
                 {statsDisagrees && (
-                  <button onClick={() => share(`Stats say no but I still got ${pickedPlayer.name} — fight me. Check-Up 1v1`)}
-                    className="flex-1 rounded-xl border border-checkup-orange/50 py-2 text-[11px] font-bold uppercase tracking-wider text-checkup-orange hover:bg-checkup-orange/10 active:scale-95">
+                  <button
+                    onClick={() => share(`Stats say no but I still got ${pickedPlayer.name} — fight me. Check-Up 1v1`)}
+                    className="flex-1 rounded-xl py-2.5 text-[11px] font-bold uppercase tracking-wider transition-all active:scale-95"
+                    style={{ border: "1px solid rgba(255,152,0,0.5)", color: "#FF9800", background: "rgba(255,152,0,0.08)" }}
+                  >
                     Fight me 🔥
                   </button>
                 )}
                 {data?.videoId && (
-                  <button onClick={() => setShowVideo(v => !v)}
-                    className="flex-1 rounded-xl border border-white/20 py-2 text-[11px] font-bold uppercase tracking-wider text-white/70 hover:bg-white/5 active:scale-95">
-                    {showVideo ? "Hide" : "▶ Highlights"}
+                  <button
+                    onClick={() => setShowVideo(v => !v)}
+                    className="flex-1 rounded-xl py-2.5 text-[11px] font-bold uppercase tracking-wider transition-all active:scale-95"
+                    style={{ border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.6)", background: "rgba(255,255,255,0.04)" }}
+                  >
+                    {showVideo ? "▲ Hide" : "▶ Highlights"}
                   </button>
                 )}
               </div>
 
               {showVideo && data?.videoId && (
-                <div className="aspect-video overflow-hidden rounded-xl bg-black">
+                <div className="aspect-video overflow-hidden rounded-2xl bg-black">
                   <iframe className="h-full w-full" src={`https://www.youtube.com/embed/${data.videoId}?autoplay=1`} title="Highlights" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
                 </div>
               )}
 
               {/* Trash talk */}
-              <button onClick={() => { setShowComments(v => !v); if (!showComments && data) loadComments(data.matchup_id); }}
-                className="w-full rounded-xl bg-white/5 py-2 text-[11px] font-bold uppercase tracking-wider text-white/50 hover:bg-white/10 active:scale-95">
+              <button
+                onClick={() => { setShowComments(v => !v); if (!showComments && data) loadComments(data.matchup_id); }}
+                className="w-full rounded-2xl py-2.5 text-[11px] font-bold uppercase tracking-wider transition-all active:scale-95"
+                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.5)" }}
+              >
                 {showComments ? "▲ Hide" : `💬 Trash Talk${comments.length > 0 && !showComments ? ` (${comments.length})` : ""}`}
               </button>
 
               {showComments && (
                 <div className="space-y-2">
                   <div className="flex gap-2">
-                    <input value={commentText} onChange={e => setCommentText(e.target.value)} onKeyDown={e => e.key === "Enter" && postComment()}
-                      placeholder="Your take…" maxLength={200}
-                      className="flex-1 rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-sm outline-none focus:border-checkup-orange" />
-                    <button onClick={postComment} disabled={!commentText.trim()}
-                      className="rounded-lg bg-checkup-orange px-3 py-2 text-xs font-bold text-black disabled:opacity-40">POST</button>
+                    <input
+                      value={commentText}
+                      onChange={e => setCommentText(e.target.value)}
+                      onKeyDown={e => e.key === "Enter" && postComment()}
+                      placeholder="Your take…"
+                      maxLength={200}
+                      className="flex-1 rounded-xl px-3 py-2.5 text-sm outline-none font-medium"
+                      style={{ background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff" }}
+                      onFocus={e => { e.currentTarget.style.borderColor = "rgba(255,152,0,0.6)"; }}
+                      onBlur={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; }}
+                    />
+                    <button
+                      onClick={postComment}
+                      disabled={!commentText.trim()}
+                      className="btn-cu rounded-xl px-4 py-2 text-xs disabled:opacity-40"
+                    >
+                      POST
+                    </button>
                   </div>
                   {comments.slice(0, 3).map(c => (
-                    <div key={c.id} className="flex items-center justify-between rounded-lg bg-black/30 px-3 py-2">
-                      <span className="text-sm">{c.text}</span>
-                      <button onClick={() => upvote(c.id)} className="ml-2 shrink-0 rounded-full bg-white/10 px-2 py-0.5 text-xs hover:bg-checkup-orange hover:text-black">🔥 {c.upvotes}</button>
+                    <div key={c.id} className="flex items-center justify-between rounded-xl px-3 py-2.5"
+                      style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                      <span className="text-sm font-medium">{c.text}</span>
+                      <button
+                        onClick={() => upvote(c.id)}
+                        className="ml-2 shrink-0 rounded-full px-2 py-0.5 text-xs font-bold transition-all active:scale-95"
+                        style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.6)" }}
+                        onMouseEnter={e => { e.currentTarget.style.background = "linear-gradient(135deg,#FF9800,#FF5722)"; e.currentTarget.style.color = "#000"; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.08)"; e.currentTarget.style.color = "rgba(255,255,255,0.6)"; }}
+                      >
+                        🔥 {c.upvotes}
+                      </button>
                     </div>
                   ))}
-                  {comments.length === 0 && <p className="text-xs text-white/30 text-center">No takes yet. Drop yours.</p>}
+                  {comments.length === 0 && (
+                    <p className="text-xs text-center font-medium" style={{ color: "rgba(255,255,255,0.3)" }}>No takes yet. Drop yours.</p>
+                  )}
                 </div>
               )}
 
+              {/* Mt. Rushmore promo */}
               {voteCount >= 10 && (
-                <a href="/rushmore" className="flex items-center justify-between rounded-xl border border-checkup-orange/30 bg-checkup-orange/10 px-4 py-3 hover:bg-checkup-orange/15">
+                <a href="/rushmore"
+                  className="flex items-center justify-between rounded-2xl px-4 py-3.5 transition-all active:scale-[0.99]"
+                  style={{ border: "1px solid rgba(255,152,0,0.3)", background: "rgba(255,152,0,0.08)" }}>
                   <div>
-                    <div className="font-display text-base text-checkup-orange">🏔 Your Mt. Rushmore</div>
-                    <div className="text-[10px] text-white/50">{voteCount} votes deep — lock in your top 4</div>
+                    <div className="font-display text-base" style={{ color: "#FF9800" }}>🏔 Your Mt. Rushmore</div>
+                    <div className="text-[10px] font-semibold mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>
+                      {voteCount} votes deep — lock in your top 4
+                    </div>
                   </div>
-                  <span className="text-checkup-orange">→</span>
+                  <span style={{ color: "#FF9800" }}>→</span>
                 </a>
               )}
+
               <div className="h-1" />
             </div>
 
-            {/* STICKY NEXT BUTTON */}
-            <div className="shrink-0 border-t border-white/10 bg-checkup-black px-3 py-2">
-              <button onClick={() => pickRandom()}
-                className="w-full rounded-xl bg-checkup-orange py-3 font-display text-xl tracking-wider text-black transition-all active:scale-95 hover:brightness-110">
+            {/* ── STICKY NEXT BUTTON ─────────────────────────────────────── */}
+            <div className="shrink-0 px-3 py-2.5"
+              style={{ borderTop: "1px solid rgba(255,255,255,0.08)", background: "linear-gradient(180deg,#0F0F0F 0%,#0A0A0A 100%)" }}>
+              <button
+                onClick={() => pickRandom()}
+                className="btn-cu animate-orange-pulse w-full rounded-2xl py-3.5 font-display text-xl tracking-wider"
+              >
                 NEXT MATCHUP →
               </button>
             </div>
           </div>
         )}
       </div>
+
       <Confetti votedId={votedId} />
     </div>
   );
 }
 
+/* ── PickCard ──────────────────────────────────────────────────────────────── */
 function PickCard({ player, onVote, voting }: { player: Player; onVote: () => void; voting: boolean }) {
   return (
-    <button onClick={onVote} disabled={voting}
-      className="group relative flex-1 overflow-hidden rounded-2xl border border-white/10 bg-[#1e1e1e] transition-all active:scale-[0.97] hover:border-checkup-orange/40 disabled:opacity-80">
+    <button
+      onClick={onVote}
+      disabled={voting}
+      className="group relative flex-1 overflow-hidden rounded-2xl transition-all active:scale-[0.97] disabled:opacity-80"
+      style={{
+        border: "1px solid rgba(255,255,255,0.09)",
+        background: "#1A1A1A",
+      }}
+      onMouseEnter={e => { if (!voting) { (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,152,0,0.45)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 0 20px rgba(255,152,0,0.15)"; } }}
+      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.09)"; (e.currentTarget as HTMLElement).style.boxShadow = "none"; }}
+    >
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={player.photo_url} alt={player.name} className="h-full w-full object-cover object-top"
-        onError={e => { e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(player.name)}&size=600&background=F9A825&color=1E1E1E&bold=true&font-size=0.35`; }} />
-      <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black via-black/70 to-transparent" />
+      <img
+        src={player.photo_url}
+        alt={player.name}
+        className="h-full w-full object-cover object-top"
+        onError={e => { e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(player.name)}&size=600&background=FF9800&color=0A0A0A&bold=true&font-size=0.35`; }}
+      />
+      {/* Deep gradient overlay — matches app's card overlay pattern */}
+      <div className="absolute inset-x-0 bottom-0 h-2/3"
+        style={{ background: "linear-gradient(to top, rgba(0,0,0,0.97) 0%, rgba(0,0,0,0.75) 50%, transparent 100%)" }} />
+
       <div className="absolute inset-x-0 bottom-0 p-3 text-left">
-        <div className="mb-1 flex flex-wrap gap-1">
-          <span className="rounded-full bg-checkup-orange px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-black">{player.category}</span>
-          <span className="rounded-full bg-white/15 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider">{player.era}</span>
+        {/* Category + era chips */}
+        <div className="mb-1.5 flex flex-wrap gap-1">
+          <span className="rounded-full px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider"
+            style={{ background: "linear-gradient(135deg,#FF9800,#FF5722)", color: "#000" }}>
+            {player.category}
+          </span>
+          <span className="rounded-full px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider"
+            style={{ background: "rgba(255,255,255,0.14)", color: "rgba(255,255,255,0.9)" }}>
+            {player.era}
+          </span>
         </div>
+
+        {/* Name */}
         <div className="font-display text-xl leading-tight sm:text-3xl">{player.name}</div>
-        <p className="mt-0.5 line-clamp-2 text-[10px] text-white/60 sm:text-xs">{player.bio}</p>
-        <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-checkup-orange px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-black">
-          TAP TO PICK
+
+        {/* Bio */}
+        <p className="mt-0.5 line-clamp-2 text-[10px] sm:text-xs" style={{ color: "rgba(255,255,255,0.55)" }}>
+          {player.bio}
+        </p>
+
+        {/* TAP TO PICK CTA — gradient pill like app FAB */}
+        <div className="mt-2.5 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider"
+          style={{ background: "linear-gradient(135deg,#FF9800,#FF5722)", boxShadow: "0 3px 10px rgba(255,152,0,0.45)", color: "#000" }}>
+          🏀 TAP TO PICK
         </div>
       </div>
     </button>
   );
 }
 
+/* ── MiniCard ──────────────────────────────────────────────────────────────── */
 function MiniCard({ player, won, pct, loading }: { player: Player; won: boolean; pct: number; loading?: boolean }) {
   return (
-    <div className={`flex flex-1 min-w-0 items-center gap-2 overflow-hidden rounded-lg border p-1.5 transition-all ${won ? "border-checkup-orange bg-checkup-orange/10" : "border-white/10 opacity-50"}`}>
+    <div
+      className="flex flex-1 min-w-0 items-center gap-2 overflow-hidden rounded-xl p-1.5 transition-all"
+      style={won
+        ? { border: "1px solid rgba(255,152,0,0.5)", background: "rgba(255,152,0,0.1)", boxShadow: "0 2px 8px rgba(255,152,0,0.2)" }
+        : { border: "1px solid rgba(255,255,255,0.07)", background: "rgba(26,26,26,0.6)", opacity: 0.6 }
+      }
+    >
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={player.photo_url} alt={player.name} className="h-9 w-9 shrink-0 rounded-md object-cover object-top"
-        onError={e => { e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(player.name)}&size=80&background=F9A825&color=1E1E1E&bold=true`; }} />
+      <img
+        src={player.photo_url}
+        alt={player.name}
+        className="h-9 w-9 shrink-0 rounded-lg object-cover object-top"
+        onError={e => { e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(player.name)}&size=80&background=FF9800&color=0A0A0A&bold=true`; }}
+      />
       <div className="min-w-0">
-        <div className={`truncate font-display text-sm leading-tight ${won ? "text-checkup-orange" : "text-white/50"}`}>{player.name}</div>
+        <div className="truncate font-display text-sm leading-tight"
+          style={won ? { color: "#FF9800" } : { color: "rgba(255,255,255,0.5)" }}>
+          {player.name}
+        </div>
         {loading ? (
-          <div className="h-3 w-8 animate-pulse rounded bg-white/10 mt-0.5" />
+          <div className="h-3 w-8 rounded shimmer mt-0.5" />
         ) : (
-          <div className="text-[10px] text-white/40">{pct}%</div>
+          <div className="text-[10px] font-semibold" style={{ color: "rgba(255,255,255,0.4)" }}>{pct}%</div>
         )}
       </div>
-      {won && <span className="ml-auto shrink-0 text-checkup-orange">✓</span>}
+      {won && <span className="ml-auto shrink-0 text-sm" style={{ color: "#FF9800" }}>✓</span>}
     </div>
   );
 }

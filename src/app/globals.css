@@ -1,92 +1,170 @@
+/* ─── Check-Up Design System — web edition ─────────────────────────────── */
+/* Mirrors the Flutter app: Montserrat font · #FF9800→#FF5722 gradient       */
+/* Background #0A0A0A · Surface #1A1A1A / #2A2A2A · Glow rgba(255,152,0,.4) */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+/* Montserrat — same as the Flutter app (275 usages). All weights we need. */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root { color-scheme: dark; }
+/* ── Base ────────────────────────────────────────────────────────────────── */
+:root {
+  color-scheme: dark;
+  --cu-orange:       #FF9800;
+  --cu-orange-deep:  #FF5722;
+  --cu-bg:           #0A0A0A;
+  --cu-surface-1:    #1A1A1A;
+  --cu-surface-2:    #2A2A2A;
+  --cu-surface-3:    #333333;
+  --cu-glow:         rgba(255, 152, 0, 0.4);
+  --cu-glow-light:   rgba(255, 152, 0, 0.15);
+}
 
 html, body {
-  background: #1E1E1E;
-  color: #FFFFFF;
+  background:          var(--cu-bg);
+  color:               #FFFFFF;
   overscroll-behavior: none;
+  font-family:         'Montserrat', system-ui, sans-serif;
 }
 
+/* ── Typography ──────────────────────────────────────────────────────────── */
+/* .font-display now uses Montserrat Black, matching the app */
 .font-display {
-  font-family: Impact, "Oswald", "Arial Narrow", sans-serif;
-  letter-spacing: 0.02em;
+  font-family:    'Montserrat', Impact, 'Arial Narrow', sans-serif;
+  font-weight:    900;
+  letter-spacing: 0.03em;
 }
 
-/* Dynamic viewport height: fills phone viewport minus URL bar */
-.h-screen-d { height: 100dvh; }
+/* ── Viewport ────────────────────────────────────────────────────────────── */
+.h-screen-d   { height: 100dvh; }
 .min-h-screen-d { min-height: 100dvh; }
 
-/* Confetti pieces */
-.confetti-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 9999;
-  overflow: hidden;
+/* ── Orange gradient — the app's primary CTA treatment ───────────────────── */
+.btn-cu {
+  background:  linear-gradient(135deg, #FF9800 0%, #FF5722 100%);
+  box-shadow:  0 4px 14px rgba(255,152,0,0.45), 0 2px 4px rgba(255,152,0,0.2);
+  color:       #000;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  transition:  all 0.2s ease;
+}
+.btn-cu:hover   { filter: brightness(1.08); box-shadow: 0 6px 20px rgba(255,152,0,0.55); }
+.btn-cu:active  { transform: scale(0.97); }
+
+/* Outlined orange variant */
+.btn-cu-outline {
+  border:     1.5px solid rgba(255,152,0,0.55);
+  color:      #FF9800;
+  background: rgba(255,152,0,0.08);
+  transition: all 0.2s ease;
+}
+.btn-cu-outline:hover  { background: rgba(255,152,0,0.15); }
+.btn-cu-outline:active { transform: scale(0.97); }
+
+/* ── Cards / surfaces ────────────────────────────────────────────────────── */
+.card-cu {
+  background:   var(--cu-surface-1);
+  border:       1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
 }
 
+/* Orange glow on hover — used on interactive cards */
+.card-cu-hover:hover {
+  border-color: rgba(255,152,0,0.35);
+  box-shadow:   0 0 20px rgba(255,152,0,0.2);
+}
+
+/* Active / selected state glow — mirrors app nav item selected */
+.cu-selected {
+  background:   linear-gradient(135deg, rgba(255,152,0,0.18) 0%, rgba(255,87,34,0.09) 100%);
+  border:       1px solid rgba(255,152,0,0.35);
+  box-shadow:   0 4px 12px rgba(255,152,0,0.2);
+}
+
+/* Winner glow — used on voted player */
+.winner-glow {
+  box-shadow: 0 0 24px rgba(255,152,0,0.55), 0 0 48px rgba(255,152,0,0.2);
+}
+
+/* ── Tabs ────────────────────────────────────────────────────────────────── */
+.tab-active {
+  background: linear-gradient(135deg, #FF9800 0%, #FF5722 100%);
+  box-shadow: 0 2px 8px rgba(255,152,0,0.35);
+  color: #000;
+}
+
+/* ── Shimmer skeleton ───────────────────────────────────────────────────── */
+.shimmer {
+  position:   relative;
+  overflow:   hidden;
+  background: var(--cu-surface-2);
+}
+.shimmer::after {
+  content:    '';
+  position:   absolute;
+  inset:      0;
+  background: linear-gradient(
+    90deg,
+    transparent            0%,
+    rgba(255,152,0,0.06)  45%,
+    rgba(255,152,0,0.12)  50%,
+    rgba(255,152,0,0.06)  55%,
+    transparent            100%
+  );
+  background-size: 200% 100%;
+  animation:  shimmer 1.8s ease-in-out infinite;
+}
+
+/* ── Stat bar animation ─────────────────────────────────────────────────── */
+@keyframes growBar { from { width: 0%; } }
+.animate-grow { animation: growBar 1.1s cubic-bezier(.25,.46,.45,.94) forwards; }
+
+/* Bar grow via CSS variable (for dynamic width) */
+.bar-animate {
+  animation: bar-grow 1.1s cubic-bezier(.25,.46,.45,.94) forwards;
+}
+@keyframes bar-grow {
+  from { width: 0%; }
+  to   { width: var(--bar-target-width, 50%); }
+}
+
+/* ── Confetti ────────────────────────────────────────────────────────────── */
+.confetti-container {
+  position:       fixed;
+  inset:          0;
+  pointer-events: none;
+  z-index:        9999;
+  overflow:       hidden;
+}
 .confetti-piece {
-  position: absolute;
-  bottom: 50%;
-  width: 10px;
-  height: 10px;
+  position:  absolute;
+  bottom:    50%;
+  width:     10px;
+  height:    10px;
   animation: confetti-fall 1.8s ease-out forwards;
 }
-
 @keyframes confetti-fall {
-  0% {
-    transform: translateY(0) rotate(0deg) scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(-300px) rotate(720deg) scale(0.5);
-    opacity: 0;
-  }
+  0%   { transform: translateY(0) rotate(0deg) scale(1);      opacity: 1; }
+  100% { transform: translateY(-300px) rotate(720deg) scale(.5); opacity: 0; }
 }
 
-/* Hide scrollbar on filter row */
+/* ── Scrollbar ───────────────────────────────────────────────────────────── */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Stat bar grow animation */
-@keyframes growBar { from { width: 0%; } }
-.animate-grow { animation: growBar 1.1s ease-out forwards; }
-
-/* Card hover glow */
-.card-glow:hover {
-  box-shadow: 0 0 20px rgba(249, 168, 37, 0.3);
+/* ── Orange pulse on CTA ─────────────────────────────────────────────────── */
+@keyframes orangePulse {
+  0%, 100% { box-shadow: 0 4px 14px rgba(255,152,0,0.4); }
+  50%      { box-shadow: 0 4px 24px rgba(255,152,0,0.7); }
 }
+.animate-orange-pulse { animation: orangePulse 2.5s ease-in-out infinite; }
 
-/* Pulse glow on winner */
-.winner-glow {
-  box-shadow: 0 0 24px rgba(249, 168, 37, 0.5), 0 0 48px rgba(249, 168, 37, 0.2);
+/* ── VS badge shimmer bar ────────────────────────────────────────────────── */
+@keyframes vsPulse {
+  0%, 100% { box-shadow: 0 0 10px rgba(255,152,0,0.5); }
+  50%      { box-shadow: 0 0 20px rgba(255,152,0,0.9); }
 }
-
-/* Stat bar animation with dynamic width via CSS variable */
-.bar-animate {
-  --bar-target-width: 50%;
-  animation: bar-grow 1.1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-}
-
-@keyframes bar-grow {
-  from { width: 0%; }
-  to { width: var(--bar-target-width); }
-}
-
-/* Shimmer loading effect */
-.shimmer {
-  background: linear-gradient(90deg, #1e1e1e 25%, #2a2a2a 50%, #1e1e1e 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
-
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
+.vs-badge { animation: vsPulse 2s ease-in-out infinite; }

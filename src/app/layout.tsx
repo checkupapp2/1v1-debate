@@ -18,13 +18,14 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: "cover",
-  themeColor: "#1E1E1E",
+  themeColor: "#0A0A0A",   // matches Check-Up app background
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="bg-checkup-black text-white antialiased">
+      {/* bg-checkup-black is now #0A0A0A — true app background */}
+      <body className="bg-[#0A0A0A] font-body text-white antialiased">
         {children}
       </body>
     </html>
