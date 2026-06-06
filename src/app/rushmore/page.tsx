@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { getTopVoted } from "@/lib/local";
 import { Player } from "@/lib/types";
 
@@ -7,7 +7,6 @@ export default function RushmorePage() {
   const [top, setTop] = useState<Player[]>([]);
   const [sharing, setSharing] = useState(false);
   const [shareMsg, setShareMsg] = useState("");
-  const captureRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch("/api/players")
@@ -30,54 +29,49 @@ export default function RushmorePage() {
     setShareMsg("Creating image…");
 
     try {
-      if (captureRef.current) {
-        // Dynamic import so html2canvas doesn't bloat the initial bundle
-        const html2canvas = (await import("html2canvas")).default;
-        const canvas = await html2canvas(captureRef.current, {
-          backgroundColor: "#0A0A0A",
-          scale: 2,
-          useCORS: true,
-          allowTaint: true,
-          logging: false,
+      // Build query params — server generates the PNG, no CORS issues
+      const params = new URLSearchParams();
+      top.forEach((p, i) => {
+        params.set(`n${i + 1}`, p.name);
+        params.set(`c${i + 1}`, p.category);
+        params.set(`i${i + 1}`, p.photo_url);
+      });
+
+      const res = await fetch(`/api/rushmore-image?${params.toString()}`);
+      if (!res.ok) throw new Error("Image route returned " + res.status);
+
+      const blob = await res.blob();
+      const file = new File([blob], "my-rushmore.png", { type: "image/png" });
+
+      // Native share sheet — iOS / Android
+      if (
+        typeof navigator !== "undefined" &&
+        navigator.canShare &&
+        navigator.canShare({ files: [file] })
+      ) {
+        await navigator.share({
+          files: [file],
+          title: "My 1v1 Mt. Rushmore",
+          text: `My basketball 1v1 Mt. Rushmore: ${top.map((p) => p.name).join(", ")}. Build yours on Check-Up 1v1!`,
         });
-
-        canvas.toBlob(async (blob) => {
-          if (!blob) { fallbackShare(); return; }
-          const file = new File([blob], "my-rushmore.png", { type: "image/png" });
-
-          // Native share sheet (iOS / Android)
-          if (
-            typeof navigator !== "undefined" &&
-            navigator.canShare &&
-            navigator.canShare({ files: [file] })
-          ) {
-            await navigator.share({
-              files: [file],
-              title: "My 1v1 Mt. Rushmore",
-              text: `My basketball 1v1 Mt. Rushmore: ${top.map((p) => p.name).join(", ")}. Build yours on Check-Up 1v1!`,
-            });
-            setShareMsg("");
-          } else {
-            // Desktop fallback — download the image
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = "my-rushmore.png";
-            a.click();
-            URL.revokeObjectURL(url);
-            setShareMsg("Image saved!");
-            setTimeout(() => setShareMsg(""), 2500);
-          }
-          setSharing(false);
-        }, "image/png");
-        return; // blob callback handles setSharing(false)
+        setShareMsg("");
+      } else {
+        // Desktop fallback — download the PNG
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "my-rushmore.png";
+        a.click();
+        URL.revokeObjectURL(url);
+        setShareMsg("Image saved!");
+        setTimeout(() => setShareMsg(""), 2500);
       }
     } catch {
-      // html2canvas failed — fall through to text share
+      fallbackShare();
+      setShareMsg("");
+    } finally {
+      setSharing(false);
     }
-
-    fallbackShare();
-    setSharing(false);
   }
 
   function fallbackShare() {
@@ -141,9 +135,8 @@ export default function RushmorePage() {
         </a>
       </header>
 
-      {/* ── CAPTURE AREA (no share button inside) ───────────────────── */}
+      {/* ── CONTENT ─────────────────────────────────────────────────── */}
       <div
-        ref={captureRef}
         className="flex flex-col flex-1 min-h-0"
         style={{ background: "#0A0A0A", padding: "12px 12px 8px" }}
       >
@@ -225,7 +218,6 @@ export default function RushmorePage() {
                     src={p.photo_url}
                     alt={p.name}
                     className="absolute inset-0 h-full w-full object-cover object-top"
-                    crossOrigin="anonymous"
                     onError={(e) => {
                       e.currentTarget.src =
                         "https://placehold.co/400x500/111111/FF9800?text=🏀";
@@ -275,26 +267,9 @@ export default function RushmorePage() {
           </div>
         )}
 
-        {/* Watermark — visible in captured image */}
-        {hasAll4 && (
-          <div className="shrink-0 flex items-center justify-center gap-1.5 pt-2 pb-1">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/checkup_btn.png"
-              alt=""
-              className="h-4 w-4 rounded-full object-cover opacity-50"
-            />
-            <span
-              className="text-[10px] font-bold uppercase tracking-widest"
-              style={{ color: "rgba(255,255,255,0.25)" }}
-            >
-              Check-Up 1v1
-            </span>
-          </div>
-        )}
       </div>
 
-      {/* ── SHARE BUTTON — outside capture so it's not in the image ─── */}
+      {/* ── SHARE BUTTON ────────────────────────────────────────────── */}
       {hasAll4 && (
         <div
           className="shrink-0 px-4 pt-2 pb-4"
