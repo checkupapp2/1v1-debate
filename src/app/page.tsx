@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Player, Era, Category } from "@/lib/types";
 import { matchupId, computeStatsEdge } from "@/lib/matchup";
 import { recordLocalVote, getLocalVotes } from "@/lib/local";
@@ -13,6 +13,18 @@ interface MatchupData {
   aVotes: number;
   bVotes: number;
   videoId: string | null;
+}
+
+/** Bolds every occurrence of the winner's name in the AI analysis text */
+function highlightWinner(text: string, name: string): React.ReactNode {
+  if (!text || !name) return text;
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const parts = text.split(new RegExp(`(${escaped})`, "gi"));
+  return parts.map((p, i) =>
+    p.toLowerCase() === name.toLowerCase()
+      ? <strong key={i} style={{ color: "#FF9800", fontWeight: 800 }}>{p}</strong>
+      : p
+  );
 }
 
 const CATEGORY_TABS = ["ALL", "NBA", "STREETBALL", "FANTASY", "CELEBS"] as const;
@@ -315,6 +327,33 @@ export default function Home() {
                 )}
               </div>
 
+              {/* Check-Up Analysis — shown FIRST so you know the verdict before the stats */}
+              <div className="rounded-2xl p-3" style={{ background: "#1A1A1A", border: "1px solid rgba(255,152,0,0.18)" }}>
+                <div className="mb-1.5 flex items-center gap-2">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/checkup_btn.png" alt="" className="h-5 w-5 rounded-full object-cover"
+                    style={{ boxShadow: "0 0 6px rgba(255,152,0,0.4)" }}
+                    onError={e => { e.currentTarget.style.display = "none"; }} />
+                  <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>
+                    Check-Up Analysis
+                  </p>
+                </div>
+                {!data ? (
+                  <div className="space-y-2">
+                    <div className="h-4 rounded-lg shimmer w-full" />
+                    <div className="h-4 rounded-lg shimmer w-5/6" />
+                    <div className="h-4 rounded-lg shimmer w-4/6" />
+                  </div>
+                ) : (
+                  <p className="text-sm font-medium leading-relaxed" style={{ color: "rgba(255,255,255,0.85)" }}>
+                    {highlightWinner(
+                      data.analysis,
+                      edge ? (edge.winnerId === a!.id ? a!.name : b!.name) : ""
+                    )}
+                  </p>
+                )}
+              </div>
+
               {/* Head to head stats */}
               <div className="rounded-2xl p-3" style={{ background: "#1A1A1A", border: "1px solid rgba(255,255,255,0.07)" }}>
                 <p className="mb-2 text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>
@@ -346,30 +385,6 @@ export default function Home() {
                     </p>
                   )}
                 </div>
-              </div>
-
-              {/* Check-Up Analysis */}
-              <div className="rounded-2xl p-3" style={{ background: "#1A1A1A", border: "1px solid rgba(255,255,255,0.07)" }}>
-                <div className="mb-1.5 flex items-center gap-2">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/checkup_btn.png" alt="" className="h-5 w-5 rounded-full object-cover"
-                    style={{ boxShadow: "0 0 6px rgba(255,152,0,0.4)" }}
-                    onError={e => { e.currentTarget.style.display = "none"; }} />
-                  <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>
-                    Check-Up Analysis
-                  </p>
-                </div>
-                {!data ? (
-                  <div className="space-y-2">
-                    <div className="h-4 rounded-lg shimmer w-full" />
-                    <div className="h-4 rounded-lg shimmer w-5/6" />
-                    <div className="h-4 rounded-lg shimmer w-4/6" />
-                  </div>
-                ) : (
-                  <p className="text-sm font-medium leading-relaxed" style={{ color: "rgba(255,255,255,0.85)" }}>
-                    {data.analysis}
-                  </p>
-                )}
               </div>
 
               {/* Action buttons */}
