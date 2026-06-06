@@ -3,7 +3,6 @@ import { getAdminDb } from "@/lib/firebaseAdmin";
 import { SEED_PLAYERS } from "@/data/players";
 import { computeStatsEdge } from "@/lib/matchup";
 import { fetchYouTubeVideoId } from "@/lib/youtube";
-import Anthropic from "@anthropic-ai/sdk";
 
 export const dynamic = "force-dynamic";
 
@@ -161,46 +160,60 @@ function richFallback(a: any, b: any): string {
   return `${opener} ${closer}`;
 }
 
-/** Build a unique, player-specific analysis using Claude Haiku (on-demand, cached in Firestore). */
+/** Call OpenRouter (OpenAI-compatible) to generate a unique matchup analysis. */
+async function callOpenRouter(prompt: string): Promise<string> {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey || apiKey === "PASTE_YOUR_OPENROUTER_KEY") return "";
+  try {
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": process.env.NEXT_PUBLIC_SITE_URL || "https://1v1.checkupbasketball.com",
+        "X-Title": "Check-Up 1v1",
+      },
+      body: JSON.stringify({
+        model: process.env.OPENROUTER_MODEL || "anthropic/claude-haiku-4-5",
+        max_tokens: 200,
+        messages: [{ role: "user", content: prompt }],
+      }),
+    });
+    if (!res.ok) return "";
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content?.trim() ?? "";
+  } catch {
+    return "";
+  }
+}
+
+/** Build a unique, player-specific analysis via OpenRouter (cached in Firestore on first hit). */
 async function generateAnalysis(a: any, b: any): Promise<string> {
   const edge = computeStatsEdge(a, b);
   const winner = edge.winnerId === a.id ? a : b;
   const loser  = edge.winnerId === a.id ? b : a;
 
-  // Try Claude first
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (apiKey && apiKey !== "PASTE_ANTHROPIC_KEY_HERE") {
-    try {
-      const client = new Anthropic({ apiKey });
-      const winnerEdges = ATTRS
-        .filter((k) => (winner[k] || 0) > (loser[k] || 0))
-        .map((k) => STAT_NOUN[k]);
+  const winnerEdges = ATTRS
+    .filter((k) => (winner[k] || 0) > (loser[k] || 0))
+    .map((k) => STAT_NOUN[k]);
 
-      const prompt = [
-        `You are Check-Up, a sharp basketball debate platform. Write a 2-3 sentence analysis for a pure isolation 1v1 matchup.`,
-        ``,
-        `${a.name} (${a.category} · ${a.era}): ${a.bio}`,
-        `  Stats — Handles: ${a.handles}/10, Scoring: ${a.scoring}/10, Quickness: ${a.quickness}/10, Heart: ${a.heart}/10, Court IQ: ${a.court_iq}/10`,
-        ``,
-        `${b.name} (${b.category} · ${b.era}): ${b.bio}`,
-        `  Stats — Handles: ${b.handles}/10, Scoring: ${b.scoring}/10, Quickness: ${b.quickness}/10, Heart: ${b.heart}/10, Court IQ: ${b.court_iq}/10`,
-        ``,
-        `Give the slight edge to ${winner.name}${winnerEdges.length ? ` — their ${winnerEdges.slice(0, 2).join(" and ")} are the difference` : ""}.`,
-        `Be specific to these two players. Reference their actual bios and real stat differences. Use real basketball language. No bullet points. Under 65 words.`,
-      ].join("\n");
+  const prompt = [
+    `You are Check-Up, a sharp basketball debate platform. Write a 2-3 sentence analysis for a pure isolation 1v1 matchup.`,
+    ``,
+    `${a.name} (${a.category} · ${a.era}): ${a.bio}`,
+    `  Stats — Handles: ${a.handles}/10, Scoring: ${a.scoring}/10, Quickness: ${a.quickness}/10, Heart: ${a.heart}/10, Court IQ: ${a.court_iq}/10`,
+    ``,
+    `${b.name} (${b.category} · ${b.era}): ${b.bio}`,
+    `  Stats — Handles: ${b.handles}/10, Scoring: ${b.scoring}/10, Quickness: ${b.quickness}/10, Heart: ${b.heart}/10, Court IQ: ${b.court_iq}/10`,
+    ``,
+    `Give the slight edge to ${winner.name}${winnerEdges.length ? ` — their ${winnerEdges.slice(0, 2).join(" and ")} are the difference` : ""}.`,
+    `Be specific to these two players. Reference their actual bios and real stat differences. Use real basketball language. No bullet points. Under 65 words.`,
+  ].join("\n");
 
-      const res = await client.messages.create({
-        model: "claude-haiku-4-5-20251001",
-        max_tokens: 200,
-        messages: [{ role: "user", content: prompt }],
-      });
-      const text = res.content?.[0]?.type === "text" ? res.content[0].text.trim() : "";
-      if (text.length > 20) return text;
-    } catch {
-      // fall through to rich fallback
-    }
-  }
+  const text = await callOpenRouter(prompt);
+  if (text.length > 20) return text;
 
+  // Fall through to rich stat-based fallback if key not set or call failed
   return richFallback(a, b);
 }
 
