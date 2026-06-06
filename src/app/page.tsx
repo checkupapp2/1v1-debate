@@ -132,33 +132,44 @@ export default function Home() {
     <div className="flex h-screen-d flex-col overflow-hidden bg-[#0A0A0A] text-white">
 
       {/* ── HEADER ─────────────────────────────────────────────────────────── */}
-      <header className="flex shrink-0 items-center justify-between px-3 py-2.5"
+      <header className="flex shrink-0 items-center justify-between px-3 py-2"
         style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", background: "linear-gradient(180deg,#1A1A1A 0%,#0F0F0F 100%)" }}>
+
+        {/* Logo — horizontal Check-Up PNG */}
         <a href="/" className="flex items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/checkup_btn.png" alt="Check-Up" className="h-8 w-8 rounded-full object-cover"
-            style={{ boxShadow: "0 0 8px rgba(255,152,0,0.5)" }}
+          <img src="/checkup_btn.png" alt="Check-Up" className="h-9 w-9 rounded-full object-cover shrink-0"
+            style={{ boxShadow: "0 0 10px rgba(255,152,0,0.55)" }}
             onError={e => { e.currentTarget.style.display = "none"; }} />
-          <span className="font-display text-lg tracking-widest">
-            <span style={{ background: "linear-gradient(135deg,#FF9800,#FF5722)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>CHECK-UP</span>
-            {" "}<span className="text-white">1V1</span>
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/checkup_main.png" alt="Check-Up 1V1" className="h-7 w-auto object-contain"
+            style={{ maxWidth: 140 }}
+            onError={e => {
+              // fallback to text if image missing
+              const span = document.createElement("span");
+              span.className = "font-display text-base tracking-widest";
+              span.innerHTML = '<span style="background:linear-gradient(135deg,#FF9800,#FF5722);-webkit-background-clip:text;-webkit-text-fill-color:transparent">CHECK-UP</span> <span style="color:#fff">1V1</span>';
+              e.currentTarget.replaceWith(span);
+            }} />
         </a>
+
+        {/* Right side: Mt Rushmore shortcut + vote count */}
         <div className="flex items-center gap-2">
+          {/* Mt. Rushmore — always visible in header */}
+          <a href="/rushmore"
+            className="flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all active:scale-95"
+            style={{ background: "linear-gradient(135deg,rgba(255,152,0,0.18),rgba(255,87,34,0.1))", border: "1px solid rgba(255,152,0,0.4)", color: "#FF9800" }}>
+            🏀 Rushmore
+          </a>
           {king && (
-            <span className="hidden items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider sm:flex"
-              style={{ background: "rgba(255,152,0,0.12)", border: "1px solid rgba(255,152,0,0.3)", color: "#FF9800" }}>
+            <span className="hidden items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wider sm:flex"
+              style={{ background: "rgba(255,152,0,0.1)", border: "1px solid rgba(255,152,0,0.25)", color: "#FF9800" }}>
               👑 {king.name}
             </span>
           )}
-          <a href="/submit"
-            className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider transition-all hover:text-white"
-            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>
-            + Players
-          </a>
-          <span className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
-            style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.4)" }}>
-            {voteCount} votes
+          <span className="rounded-full px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider"
+            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)" }}>
+            {voteCount} 🗳
           </span>
         </div>
       </header>
