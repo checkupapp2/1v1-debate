@@ -60,9 +60,24 @@ export default function Home() {
   const revealRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Read ?a= and ?b= set by the shared matchup page CTA
+    const urlParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+    const presetAId = urlParams?.get("a") ?? null;
+    const presetBId = urlParams?.get("b") ?? null;
+
     fetch("/api/players")
       .then(r => r.json())
-      .then(d => { setPlayers(d.players && d.players.length > 0 ? d.players : SEED_PLAYERS); setLoading(false); })
+      .then(d => {
+        const all: Player[] = d.players && d.players.length > 0 ? d.players : SEED_PLAYERS;
+        setPlayers(all);
+        // If we arrived from a shared matchup link, lock in those two players
+        if (presetAId && presetBId) {
+          const pa = all.find(p => p.id === presetAId);
+          const pb = all.find(p => p.id === presetBId);
+          if (pa && pb) { setA(pa); setB(pb); }
+        }
+        setLoading(false);
+      })
       .catch(() => { setPlayers(SEED_PLAYERS); setLoading(false); });
     const timer = setTimeout(() => {
       setPlayers(prev => prev.length === 0 ? SEED_PLAYERS : prev);
