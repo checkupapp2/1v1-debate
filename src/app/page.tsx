@@ -48,14 +48,23 @@ export default function Home() {
   const revealRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Load players — fall back to seed data immediately if API fails or takes too long
     fetch("/api/players")
       .then(r => r.json())
       .then(d => { setPlayers(d.players && d.players.length > 0 ? d.players : SEED_PLAYERS); setLoading(false); })
       .catch(() => { setPlayers(SEED_PLAYERS); setLoading(false); });
-    const timer = setTimeout(() => { setPlayers(prev => prev.length === 0 ? SEED_PLAYERS : prev); setLoading(false); }, 6000);
-    return () => clearTimeout(timer);
+    const timer = setTimeout(() => {
+      setPlayers(prev => prev.length === 0 ? SEED_PLAYERS : prev);
+      setLoading(false);
+    }, 6000);
+
+    // Load weekly king
     fetch("/api/weekly-king").then(r => r.json()).then(d => setKing(d?.king ?? null)).catch(() => {});
+
+    // Restore local vote count
     setVoteCount(getLocalVotes().length);
+
+    return () => clearTimeout(timer);
   }, []);
 
   const filtered = useMemo(() => {
@@ -78,7 +87,8 @@ export default function Home() {
     setShowComments(false); setComments([]); setCommentText(""); setShowVideo(false); setVotedId(null);
   }
 
-  useEffect(() => { if (filtered.length >= 2 && !a) pickRandom(); }, [filtered]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (filtered.length >= 2 && !a) pickRandom(filtered); }, [filtered, a]);
 
   async function vote(playerId: string) {
     if (!a || !b || voting || picked) return;
