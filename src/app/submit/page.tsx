@@ -123,6 +123,7 @@ export default function SubmitPlayerPage() {
                   className="w-full bg-black border border-zinc-700 rounded-md p-3 text-white focus:ring-2 focus:ring-white outline-none"
                 >
                   <option value="NBA">NBA</option>
+                  <option value="WNBA">WNBA</option>
                   <option value="Streetball Icons">Streetball Icons</option>
                   <option value="Fantasy">Fantasy</option>
                   <option value="Celebrity Ballers">Celebrity Ballers</option>

@@ -27,12 +27,13 @@ function highlightWinner(text: string, name: string): React.ReactNode {
   );
 }
 
-const CATEGORY_TABS = ["ALL", "NBA", "STREETBALL", "FANTASY", "CELEBS"] as const;
+const CATEGORY_TABS = ["ALL", "NBA", "WNBA", "STREETBALL", "FANTASY", "CELEBS"] as const;
 type CatTab = typeof CATEGORY_TABS[number];
 
 const CAT_MAP: Record<CatTab, Category | null> = {
   ALL: null,
   NBA: "NBA",
+  WNBA: "WNBA",
   STREETBALL: "Streetball Icons",
   FANTASY: "Fantasy",
   CELEBS: "Celebrity Ballers",

@@ -116,6 +116,52 @@ export const NBA = [
   ["cade",      "Cade Cunningham",        "NBA", "Current",  "Cade_Cunningham",                     "Pistons franchise piece. Methodical and dangerous.",            90,88,84,86,90],
 ];
 
+// ─── WNBA ─────────────────────────────────────────────────────────────────────
+export const WNBA = [
+  // 90s (early WNBA, founded 1997)
+  ["lisa-leslie", "Lisa Leslie", "WNBA", "90s", "Lisa_Leslie", "First to dunk in a WNBA game. 3x MVP. Legend.", 82, 92, 80, 95, 90],
+  ["sheryl-swoopes", "Sheryl Swoopes", "WNBA", "90s", "Sheryl_Swoopes", "3x MVP, 3x DPOY. The Michael Jordan of the WNBA.", 90, 94, 92, 95, 92],
+  ["cynthia-cooper", "Cynthia Cooper", "WNBA", "90s", "Cynthia_Cooper-Dyke", "4 straight titles with the Comets. Clutch personified.", 92, 95, 88, 98, 94],
+  ["rebecca-lobo", "Rebecca Lobo", "WNBA", "90s", "Rebecca_Lobo", "UConn legend. Changed women's basketball forever.", 78, 82, 72, 88, 86],
+  ["teresa-weatherspoon", "Teresa Weatherspoon", "WNBA", "90s", "Teresa_Weatherspoon", "The Shot. NY Liberty icon. Floor general.", 94, 82, 90, 95, 96],
+  ["dawn-staley", "Dawn Staley", "WNBA", "90s", "Dawn_Staley", "Hall of Fame PG. Champion coach. Leader.", 95, 84, 88, 96, 98],
+
+  // 2000s
+  ["sue-bird", "Sue Bird", "WNBA", "2000s", "Sue_Bird", "4x champ. All-time assists leader. Seattle royalty.", 96, 86, 84, 92, 99],
+  ["diana-taurasi", "Diana Taurasi", "WNBA", "2000s", "Diana_Taurasi", "GOAT scorer. All-time leading scorer. Killer instinct.", 90, 99, 86, 96, 94],
+  ["tamika-catchings", "Tamika Catchings", "WNBA", "2000s", "Tamika_Catchings", "10x All-Star, MVP, DPOY, champion. Complete player.", 86, 90, 90, 98, 94],
+  ["lauren-jackson", "Lauren Jackson", "WNBA", "2000s", "Lauren_Jackson_(basketball)", "3x MVP. Australian legend. Most skilled big ever.", 82, 94, 84, 92, 90],
+  ["yolanda-griffith", "Yolanda Griffith", "WNBA", "2000s", "Yolanda_Griffith", "MVP and champion. Dominant two-way force.", 78, 88, 82, 92, 86],
+  ["katie-smith", "Katie Smith", "WNBA", "2000s", "Katie_Smith", "First woman to score 6,000 points. Pure bucket.", 84, 94, 82, 90, 88],
+  ["tina-thompson", "Tina Thompson", "WNBA", "2000s", "Tina_Thompson", "4x champ. First draft pick in WNBA history.", 80, 92, 78, 90, 86],
+  ["swin-cash", "Swin Cash", "WNBA", "2000s", "Swin_Cash", "3x champ. Leader. Clutch performer.", 84, 88, 86, 94, 88],
+  ["chamique-holdsclaw", "Chamique Holdsclaw", "WNBA", "2000s", "Chamique_Holdsclaw", "6x All-Star. Tennessee legend. Could do it all.", 88, 92, 88, 88, 90],
+
+  // 2010s
+  ["candace-parker", "Candace Parker", "WNBA", "2010s", "Candace_Parker", "Only player with MVP and Rookie of Year same season.", 88, 92, 88, 92, 94],
+  ["sylvia-fowles", "Sylvia Fowles", "WNBA", "2010s", "Sylvia_Fowles", "2x MVP, DPOY, 2x champ. Dominant center.", 72, 88, 78, 94, 86],
+  ["maya-moore", "Maya Moore", "WNBA", "2010s", "Maya_Moore", "4x champ, MVP, Finals MVP. Winner in every sense.", 90, 96, 90, 98, 94],
+  ["brittney-griner", "Brittney Griner", "WNBA", "2010s", "Brittney_Griner", "2x DPOY. 8x All-Star. Unstoppable in the post.", 76, 90, 76, 92, 84],
+  ["elena-delle-donne", "Elena Delle Donne", "WNBA", "2010s", "Elena_Delle_Donne", "2x MVP. Most efficient scorer in WNBA history.", 86, 98, 84, 92, 92],
+  ["nneka-ogwumike", "Nneka Ogwumike", "WNBA", "2010s", "Nneka_Ogwumike", "MVP, champion. Stanford to WNBA royalty.", 84, 92, 88, 94, 90],
+  ["angel-mccoughtry", "Angel McCoughtry", "WNBA", "2010s", "Angel_McCoughtry", "5x All-Star. Scoring machine. Atlanta legend.", 88, 94, 92, 92, 88],
+  ["lindsay-whalen", "Lindsay Whalen", "WNBA", "2010s", "Lindsay_Whalen", "4x champ. Minnesota legend. Clutch point guard.", 92, 86, 86, 94, 94],
+  ["seimone-augustus", "Seimone Augustus", "WNBA", "2010s", "Seimone_Augustus", "4x champ. Smooth scorer. LSU legend.", 88, 94, 86, 90, 88],
+  ["tina-charles", "Tina Charles", "WNBA", "2010s", "Tina_Charles_(basketball)", "2010 Rookie of Year, MVP. Double-double machine.", 78, 92, 80, 92, 86],
+
+  // Current
+  ["aja-wilson", "A'ja Wilson", "WNBA", "Current", "A%27ja_Wilson", "3x MVP, 2x DPOY, 2x champ. Most dominant force today.", 78, 96, 84, 96, 90],
+  ["breanna-stewart", "Breanna Stewart", "WNBA", "Current", "Breanna_Stewart", "2x MVP, 2x champ. Freakish skill at 6'4.", 86, 94, 88, 94, 92],
+  ["sabrina-ionescu", "Sabrina Ionescu", "WNBA", "Current", "Sabrina_Ionescu", "Triple-double queen. First overall pick. Franchise.", 94, 90, 88, 92, 96],
+  ["caitlin-clark", "Caitlin Clark", "WNBA", "Current", "Caitlin_Clark", "Rookie of Year. Logo threes. Changed the game.", 96, 94, 88, 92, 94],
+  ["angel-reese", "Angel Reese", "WNBA", "Current", "Angel_Reese", "Rookie. LSU champion. Double-double machine.", 78, 86, 82, 94, 84],
+  ["aliyah-boston", "Aliyah Boston", "WNBA", "Current", "Aliyah_Boston", "Rookie of Year. South Carolina legend. Skilled big.", 76, 88, 78, 92, 88],
+  ["kelsey-plum", "Kelsey Plum", "WNBA", "Current", "Kelsey_Plum", "All-time NCAA scorer. 3x champ. Bucket getter.", 90, 92, 86, 90, 90],
+  ["chelsea-gray", "Chelsea Gray", "WNBA", "Current", "Chelsea_Gray", "3x champ. Best point guard in the game right now.", 96, 90, 88, 92, 98],
+  ["jewell-loyd", "Jewell Loyd", "WNBA", "Current", "Jewell_Loyd", "2x champ. Gold Mamba. Elite scorer.", 90, 94, 92, 92, 90],
+  ["arike-ogunbowale", "Arike Ogunbowale", "WNBA", "Current", "Arike_Ogunbowale", "Clutch gene. Notre Dame legend. Daggers only.", 92, 94, 92, 96, 90],
+];
+
 // ─── STREETBALL ───────────────────────────────────────────────────────────────
 export const STREETBALL = [
   ["skip",      "Skip 2 My Lou",          "Streetball Icons", "2000s", null, "AND1 floor general. Pope of the playground.",              100,88,95,95,92],

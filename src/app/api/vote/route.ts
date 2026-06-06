@@ -44,6 +44,7 @@ const STAT_EDGE: Record<Attr, string> = {
 // Category-specific context phrases
 const CAT_CONTEXT: Record<string, string[]> = {
   "NBA":             ["in a half-court iso set", "in a playoff isolation", "in a pick-your-poison 1v1", "when it comes down to one shot"],
+  "WNBA":            ["in a WNBA iso set", "in a finals isolation", "in a pick-your-poison 1v1", "when it comes down to one shot"],
   "Streetball Icons":["on the blacktop", "in an open gym battle", "when the crowd's watching", "in a street run"],
   "Celebrity Ballers":["in a charity run", "in a pro-am game", "when the cameras are on", "for the culture"],
   "Fantasy":         ["at their absolute peak", "in prime form", "in this hypothetical matchup", "across any era"],

@@ -1,5 +1,6 @@
 export type Category =
   | "NBA"
+  | "WNBA"
   | "Streetball Icons"
   | "Fantasy"
   | "Celebrity Ballers";
