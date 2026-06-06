@@ -187,17 +187,13 @@ async function callOpenRouter(prompt: string): Promise<string> {
   }
 }
 
-/** Build a unique, player-specific analysis via OpenRouter (cached in Firestore on first hit). */
-async function generateAnalysis(a: any, b: any): Promise<string> {
-  const edge = computeStatsEdge(a, b);
-  const winner = edge.winnerId === a.id ? a : b;
-  const loser  = edge.winnerId === a.id ? b : a;
-
+/** Build the OpenRouter prompt for a matchup. */
+function buildPrompt(a: any, b: any, winnerId: string): string {
+  const winner = winnerId === a.id ? a : b;
   const winnerEdges = ATTRS
-    .filter((k) => (winner[k] || 0) > (loser[k] || 0))
+    .filter((k) => (winner[k] || 0) > ((winnerId === a.id ? b : a)[k] || 0))
     .map((k) => STAT_NOUN[k]);
-
-  const prompt = [
+  return [
     `You are Check-Up, a sharp basketball debate platform. Write a 2-3 sentence analysis for a pure isolation 1v1 matchup.`,
     ``,
     `${a.name} (${a.category} · ${a.era}): ${a.bio}`,
@@ -209,12 +205,6 @@ async function generateAnalysis(a: any, b: any): Promise<string> {
     `Give the slight edge to ${winner.name}${winnerEdges.length ? ` — their ${winnerEdges.slice(0, 2).join(" and ")} are the difference` : ""}.`,
     `Be specific to these two players. Reference their actual bios and real stat differences. Use real basketball language. No bullet points. Under 65 words.`,
   ].join("\n");
-
-  const text = await callOpenRouter(prompt);
-  if (text.length > 20) return text;
-
-  // Fall through to rich stat-based fallback if key not set or call failed
-  return richFallback(a, b);
 }
 
 export async function POST(req: NextRequest) {
@@ -248,21 +238,29 @@ export async function POST(req: NextRequest) {
   ];
   const existingAnalysis: string = matchupSnap.data()?.analysis || "";
   const isGeneric = GENERIC_MARKERS.some((m) => existingAnalysis.includes(m));
+  const isFallback = matchupSnap.data()?.ai_generated === false;
+  const hasKey = !!(process.env.OPENROUTER_API_KEY?.trim()) &&
+    process.env.OPENROUTER_API_KEY !== "PASTE_YOUR_OPENROUTER_KEY";
 
+  // Regenerate if: no doc, no text, old generic text, OR stored as fallback and key is now live
   const needsAnalysis =
     !matchupSnap.exists ||
     !existingAnalysis ||
-    isGeneric;
+    isGeneric ||
+    (isFallback && hasKey);
 
   if (needsAnalysis) {
     const edge = computeStatsEdge(a, b);
-    const analysis = await generateAnalysis(a, b);
+    const aiText = await callOpenRouter(buildPrompt(a, b, edge.winnerId));
+    const isAI = aiText.length > 20;
+    const analysis = isAI ? aiText : richFallback(a, b);
     await matchupRef.set(
       {
         id: matchupId,
         player_a_id: a.id,
         player_b_id: b.id,
         analysis,
+        ai_generated: isAI,
         stats_edge: edge.winnerId,
         created_at: matchupSnap.exists ? matchupSnap.data()?.created_at : Date.now(),
         updated_at: Date.now(),
@@ -321,7 +319,7 @@ export async function POST(req: NextRequest) {
   } catch {}
 
   const matchupData = matchupSnap.data();
-  const analysis = matchupData?.analysis || (await generateAnalysis(a, b));
+  const analysis = matchupData?.analysis || richFallback(a, b);
 
   return NextResponse.json({
     matchup_id: matchupId,
